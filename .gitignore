@@ -47,3 +47,6 @@ backup/
 # Temporary files
 *.tmp
 *.temp
+
+# Test files (optional)
+test_install.sh
