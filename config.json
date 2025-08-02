@@ -1,0 +1,41 @@
+{
+  "sources": {
+    "domestic": {
+      "name": "国内源",
+      "url": "https://live.hacks.tools/tv/iptv4.m3u",
+      "filename": "domestic.m3u",
+      "enabled": true
+    },
+    "international": {
+      "name": "国际源",
+      "url": "https://live.hacks.tools/iptv/index.m3u", 
+      "filename": "international.m3u",
+      "enabled": true
+    }
+  },
+  "directories": {
+    "base_dir": "/data/media/iptv",
+    "data_dir": "data",
+    "backup_dir": "backup",
+    "log_dir": "logs"
+  },
+  "download": {
+    "timeout": 30,
+    "retry_count": 3,
+    "retry_delay": 5,
+    "max_workers": 4,
+    "user_agent": "IPTV-Manager/1.0"
+  },
+  "maintenance": {
+    "backup_retention_days": 7,
+    "log_retention_days": 30,
+    "enable_backup": true,
+    "enable_cleanup": true
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "max_size_mb": 10,
+    "backup_count": 5
+  }
+}
