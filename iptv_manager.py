@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-IPTV直播源管理脚本
-=================
+IPTV直播源管理脚本 / IPTV Live Source Management Script
+=======================================================
 
-功能描述:
-- 自动下载和更新IPTV直播源
-- 支持多源并发下载
-- 配置文件管理所有参数
-- 完整的日志记录和错误处理
-- 文件版本控制和自动清理
-- 兼容crontab定时执行
+功能描述 / Features:
+- 自动下载和更新IPTV直播源 / Automatic download and update of IPTV live sources
+- 支持多源并发下载 / Multi-source concurrent downloads
+- 配置文件管理所有参数 / Configuration file manages all parameters
+- 完整的日志记录和错误处理 / Complete logging and error handling
+- 文件版本控制和自动清理 / File version control and automatic cleanup
+- 兼容crontab定时执行 / Compatible with crontab scheduled execution
+- 多语言支持 / Multi-language support
 
-作者: IPTV管理脚本开发专家
-版本: 1.0.0
-适用环境: Debian服务器
+作者 / Author: IPTV管理脚本开发专家 / IPTV Management Script Expert
+版本 / Version: 1.0.4
+适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
 import os
@@ -30,9 +31,23 @@ from typing import Dict, List, Optional, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
 
+# 导入多语言支持
+try:
+    from languages import get_text, set_language, lang_manager
+except ImportError:
+    # 如果语言文件不存在，创建简单的替代函数
+    def get_text(key, *args, **kwargs):
+        return key
+    def set_language(lang):
+        pass
+    class DummyLangManager:
+        def get(self, key, *args, **kwargs):
+            return key
+    lang_manager = DummyLangManager()
+
 # 检查并导入必要的依赖
 def check_dependencies():
-    """检查必要的依赖是否已安装"""
+    """检查必要的依赖是否已安装 / Check if required dependencies are installed"""
     missing_deps = []
     
     try:
@@ -46,10 +61,10 @@ def check_dependencies():
         missing_deps.append('chardet')
     
     if missing_deps:
-        print(f"错误: 缺少必要的依赖包: {', '.join(missing_deps)}")
-        print("请运行以下命令安装:")
+        print(f"{get_text('error')}: {get_text('missing_dependencies')}: {', '.join(missing_deps)}")
+        print(f"{get_text('install_dependencies')}:")
         print(f"python3 -m pip install {' '.join(missing_deps)} --user")
-        print("或者:")
+        print(f"{get_text('or')}:")
         print("./install.sh")
         sys.exit(1)
 
@@ -121,18 +136,23 @@ class IPTVConfig:
         }
     
     def _load_config(self):
-        """从文件加载配置"""
+        """从文件加载配置 / Load configuration from file"""
         if os.path.exists(self.config_path):
             try:
                 with open(self.config_path, 'r', encoding='utf-8') as f:
                     user_config = json.load(f)
                     self._merge_config(self.config, user_config)
-                logging.info(f"配置文件加载成功: {self.config_path}")
+                
+                # 设置语言
+                language = self.config.get('language', 'zh')
+                set_language(language)
+                
+                logging.info(f"{get_text('config_loaded')}: {self.config_path}")
             except Exception as e:
-                logging.warning(f"配置文件加载失败，使用默认配置: {e}")
+                logging.warning(f"{get_text('config_load_failed')}: {e}")
         else:
             self._save_config()
-            logging.info("创建默认配置文件")
+            logging.info(get_text('config_created'))
     
     def _merge_config(self, default: Dict, user: Dict):
         """递归合并配置"""
@@ -146,24 +166,24 @@ class IPTVConfig:
                 default[key] = value
     
     def _validate_config(self):
-        """验证配置有效性"""
+        """验证配置有效性 / Validate configuration"""
         required_keys = ['sources', 'directories', 'download']
         for key in required_keys:
             if key not in self.config:
-                raise ValueError(f"配置文件缺少必需的键: {key}")
+                raise ValueError(f"{get_text('missing_config_key')}: {key}")
         
         # 验证目录配置
         base_dir = self.config['directories']['base_dir']
         if not os.path.isabs(base_dir):
-            raise ValueError("base_dir必须是绝对路径")
+            raise ValueError(get_text('invalid_base_dir'))
     
     def _save_config(self):
-        """保存配置到文件"""
+        """保存配置到文件 / Save configuration to file"""
         try:
             with open(self.config_path, 'w', encoding='utf-8') as f:
                 json.dump(self.config, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            logging.error(f"保存配置文件失败: {e}")
+            logging.error(f"{get_text('config_save_failed')}: {e}")
     
     def get(self, key: str, default=None):
         """获取配置值"""
@@ -177,8 +197,15 @@ class IPTVConfig:
         return value
     
     def get_sources(self) -> Dict:
-        """获取启用的直播源配置"""
+        """获取启用的直播源配置 / Get enabled live source configurations"""
         return {k: v for k, v in self.config['sources'].items() if v.get('enabled', True)}
+    
+    def get_source_name(self, source_id: str, source_config: Dict) -> str:
+        """根据当前语言获取源名称 / Get source name based on current language"""
+        language = self.config.get('language', 'zh')
+        if language == 'en' and 'name_en' in source_config:
+            return source_config['name_en']
+        return source_config.get('name', source_id)
 
 
 class IPTVLogger:
@@ -276,23 +303,23 @@ class IPTVDownloader:
             directory.mkdir(parents=True, exist_ok=True)
             # 设置目录权限 (755)
             os.chmod(directory, 0o755)
-            logging.debug(f"创建目录: {directory}")    
+            logging.debug(f"{get_text('create_directory')}: {directory}")    
 
     def _detect_encoding(self, content: bytes) -> str:
-        """检测文件编码"""
+        """检测文件编码 / Detect file encoding"""
         try:
             result = chardet.detect(content)
             encoding = result.get('encoding', 'utf-8')
             confidence = result.get('confidence', 0)
             
             if confidence < 0.7:
-                logging.warning(f"编码检测置信度较低: {confidence}, 使用UTF-8")
+                logging.warning(f"{get_text('encoding_detection_low')}: {confidence}, {get_text('encoding_detection_failed')}")
                 return 'utf-8'
             
-            logging.debug(f"检测到编码: {encoding}, 置信度: {confidence}")
+            logging.debug(f"{get_text('detected_encoding')}: {encoding}, {get_text('confidence')}: {confidence}")
             return encoding
         except Exception as e:
-            logging.warning(f"编码检测失败，使用UTF-8: {e}")
+            logging.warning(f"{get_text('encoding_detection_failed')}: {e}")
             return 'utf-8'
     
     def _download_source(self, source_id: str, source_config: Dict) -> Tuple[bool, str]:
@@ -308,9 +335,9 @@ class IPTVDownloader:
         """
         url = source_config['url']
         filename = source_config['filename']
-        name = source_config.get('name', source_id)
+        name = self.config.get_source_name(source_id, source_config)
         
-        logging.info(f"开始下载 {name}: {url}")
+        logging.info(f"{get_text('download_source')} {name}: {url}")
         
         retry_count = self.config.get('download.retry_count', 3)
         retry_delay = self.config.get('download.retry_delay', 5)
@@ -324,7 +351,7 @@ class IPTVDownloader:
                 # 获取内容
                 content = response.content
                 if not content:
-                    raise ValueError("下载内容为空")
+                    raise ValueError(get_text('empty_content'))
                 
                 # 检测编码并解码
                 encoding = self._detect_encoding(content)
@@ -332,11 +359,11 @@ class IPTVDownloader:
                     text_content = content.decode(encoding)
                 except UnicodeDecodeError:
                     text_content = content.decode('utf-8', errors='ignore')
-                    logging.warning(f"使用UTF-8强制解码: {filename}")
+                    logging.warning(f"{get_text('force_utf8')}: {filename}")
                 
                 # 验证M3U格式
                 if not self._validate_m3u_content(text_content):
-                    raise ValueError("无效的M3U文件格式")
+                    raise ValueError(get_text('invalid_m3u'))
                 
                 # 保存文件
                 data_dir = Path(self.config.get('directories.base_dir')) / self.config.get('directories.data_dir')
@@ -356,34 +383,34 @@ class IPTVDownloader:
                 file_size = len(text_content)
                 channel_count = text_content.count('#EXTINF:')
                 
-                logging.info(f"下载成功 {name}: {filename} ({file_size} bytes, {channel_count} 频道)")
+                logging.info(f"{get_text('download_success')} {name}: {filename} ({file_size} bytes, {channel_count} {get_text('channels')})")
                 return True, ""
                 
             except requests.exceptions.RequestException as e:
-                error_msg = f"网络请求失败: {e}"
-                logging.warning(f"下载 {name} 失败 (尝试 {attempt + 1}/{retry_count}): {error_msg}")
+                error_msg = f"{get_text('network_error')}: {e}"
+                logging.warning(f"{get_text('download_failed')} {name} ({get_text('download_retry')} {attempt + 1}/{retry_count}): {error_msg}")
                 
                 if attempt < retry_count - 1:
                     time.sleep(retry_delay)
                 else:
-                    logging.error(f"下载 {name} 最终失败: {error_msg}")
+                    logging.error(f"{get_text('download_final_failed')} {name}: {error_msg}")
                     return False, error_msg
                     
             except Exception as e:
-                error_msg = f"未知错误: {e}"
-                logging.error(f"下载 {name} 失败: {error_msg}")
+                error_msg = f"{get_text('unknown_error')}: {e}"
+                logging.error(f"{get_text('download_failed')} {name}: {error_msg}")
                 return False, error_msg
         
-        return False, "重试次数耗尽"
+        return False, get_text('retry_exhausted')
     
     def _validate_m3u_content(self, content: str) -> bool:
-        """验证M3U文件内容格式"""
+        """验证M3U文件内容格式 / Validate M3U file content format"""
         if not content.strip():
             return False
         
         lines = content.strip().split('\n')
         if not lines[0].strip().startswith('#EXTM3U'):
-            logging.warning("M3U文件缺少#EXTM3U头部，但继续处理")
+            logging.warning("M3U file missing #EXTM3U header, but continuing processing")
         
         # 检查是否包含频道信息
         has_extinf = any(line.strip().startswith('#EXTINF:') for line in lines)
@@ -392,7 +419,7 @@ class IPTVDownloader:
         return has_extinf and has_urls
     
     def _backup_file(self, file_path: Path):
-        """备份现有文件"""
+        """备份现有文件 / Backup existing file"""
         try:
             backup_dir = Path(self.config.get('directories.base_dir')) / self.config.get('directories.backup_dir')
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -400,10 +427,10 @@ class IPTVDownloader:
             backup_path = backup_dir / backup_name
             
             shutil.copy2(file_path, backup_path)
-            logging.debug(f"备份文件: {file_path} -> {backup_path}")
+            logging.debug(f"{get_text('backup_file')}: {file_path} -> {backup_path}")
             
         except Exception as e:
-            logging.warning(f"备份文件失败: {e}")
+            logging.warning(f"{get_text('backup_failed')}: {e}")
     
     def download_all_sources(self) -> Dict[str, Tuple[bool, str]]:
         """
@@ -507,18 +534,18 @@ class IPTVMaintenance:
             total_count = len(download_results)
             
             report_lines.extend([
-                "下载结果统计:",
-                f"  总计: {total_count} 个源",
-                f"  成功: {success_count} 个",
-                f"  失败: {total_count - success_count} 个",
+                f"{get_text('download_stats')}:",
+                f"  {get_text('total_sources')}: {total_count} {get_text('sources') if get_text('sources') != 'sources' else '个源'}",
+                f"  {get_text('success_sources')}: {success_count} {get_text('sources') if get_text('sources') != 'sources' else '个'}",
+                f"  {get_text('failed_sources')}: {total_count - success_count} {get_text('sources') if get_text('sources') != 'sources' else '个'}",
                 ""
             ])
             
             # 详细结果
-            report_lines.append("详细结果:")
+            report_lines.append(f"{get_text('detailed_results')}:")
             for source_id, (success, error_msg) in download_results.items():
-                status = "✓ 成功" if success else f"✗ 失败: {error_msg}"
-                source_name = self.config.get(f'sources.{source_id}.name', source_id)
+                status = f"✓ {get_text('success_sources')}" if success else f"✗ {get_text('failed_sources')}: {error_msg}"
+                source_name = self.config.get_source_name(source_id, self.config.config['sources'][source_id])
                 report_lines.append(f"  {source_name}: {status}")
             
             report_lines.append("")
@@ -526,7 +553,7 @@ class IPTVMaintenance:
         # 文件信息
         data_dir = Path(self.config.get('directories.base_dir')) / self.config.get('directories.data_dir')
         if data_dir.exists():
-            report_lines.append("文件信息:")
+            report_lines.append(f"{get_text('file_info')}:")
             for m3u_file in data_dir.glob("*.m3u"):
                 try:
                     stat = m3u_file.stat()
@@ -538,9 +565,9 @@ class IPTVMaintenance:
                         content = f.read()
                         channel_count = content.count('#EXTINF:')
                     
-                    report_lines.append(f"  {m3u_file.name}: {size} bytes, {channel_count} 频道, 更新时间: {mtime}")
+                    report_lines.append(f"  {m3u_file.name}: {size} bytes, {channel_count} {get_text('channels')}, {get_text('update_time')}: {mtime}")
                 except Exception as e:
-                    report_lines.append(f"  {m3u_file.name}: 读取失败 - {e}")
+                    report_lines.append(f"  {m3u_file.name}: {get_text('read_failed')} - {e}")
         
         return "\n".join(report_lines)
     
@@ -586,7 +613,7 @@ class IPTVManager:
     def run(self):
         """执行主要任务流程"""
         try:
-            logging.info("开始执行IPTV直播源更新任务")
+            logging.info(get_text('task_start'))
             
             # 清理过期文件
             self.logger.cleanup_old_logs()
@@ -602,117 +629,117 @@ class IPTVManager:
             failed_sources = [source_id for source_id, (success, _) in download_results.items() if not success]
             
             if failed_sources:
-                logging.warning(f"部分源下载失败: {', '.join(failed_sources)}")
+                logging.warning(f"{get_text('partial_failed')}: {', '.join(failed_sources)}")
                 return 1
             else:
-                logging.info("所有任务执行完成")
+                logging.info(get_text('task_complete'))
                 return 0
                 
         except Exception as e:
-            logging.error(f"执行任务时发生错误: {e}")
+            logging.error(f"{get_text('task_error')}: {e}")
             return 1
     
     def show_status(self):
-        """显示当前状态"""
+        """显示当前状态 / Display current status"""
         try:
             download_results = {}  # 空结果用于显示文件状态
             report = self.maintenance.generate_status_report(download_results)
             print(report)
             
         except Exception as e:
-            logging.error(f"显示状态失败: {e}")
+            logging.error(f"{get_text('show_status_failed')}: {e}")
 
 
 def show_menu():
-    """显示交互式菜单"""
+    """显示交互式菜单 / Display interactive menu"""
     print("\n" + "="*60)
-    print("    IPTV直播源管理系统")
+    print(f"    {get_text('menu_title')}")
     print("="*60)
-    print("请选择要执行的操作:")
+    print(f"{get_text('menu_prompt').replace('请输入选项 (0-7):', '请选择要执行的操作:').replace('Enter option (0-7):', 'Please select operation:')}")
     print()
-    print("1. [下载] 下载/更新直播源")
-    print("2. [状态] 查看系统状态")
-    print("3. [列表] 查看直播源列表")
-    print("4. [配置] 配置管理")
-    print("5. [日志] 查看日志")
-    print("6. [清理] 清理维护")
-    print("7. [卸载] 卸载程序")
-    print("0. [退出] 退出程序")
+    print(f"1. {get_text('menu_download')}")
+    print(f"2. {get_text('menu_status')}")
+    print(f"3. {get_text('menu_list')}")
+    print(f"4. {get_text('menu_config')}")
+    print(f"5. {get_text('menu_logs')}")
+    print(f"6. {get_text('menu_cleanup')}")
+    print(f"7. {get_text('menu_uninstall')}")
+    print(f"0. {get_text('menu_exit')}")
     print()
     print("="*60)
 
 
 def interactive_mode(manager):
-    """交互式模式"""
+    """交互式模式 / Interactive mode"""
     while True:
         try:
             show_menu()
-            choice = input("请输入选项 (0-7): ").strip()
+            choice = input(f"{get_text('menu_prompt')} ").strip()
             
             if choice == '0':
-                print("\n[退出] 感谢使用 IPTV 管理系统，再见！")
+                print(f"\n{get_text('menu_exit').replace('[退出] ', '[').replace('[Exit] ', '[')} {get_text('exit_message')}")
                 return 0
                 
             elif choice == '1':
-                print("\n[下载] 开始下载/更新直播源...")
+                print(f"\n{get_text('menu_download').replace('[下载] ', '[').replace('[Download] ', '[')} {get_text('download_start')}")
                 print("-" * 50)
                 result = manager.run()
                 if result == 0:
-                    print("\n[完成] 直播源更新完成！")
+                    print(f"\n[{get_text('download_complete').split('！')[0].split('!')[0]}] {get_text('download_complete')}")
                 else:
-                    print("\n[错误] 直播源更新遇到问题，请查看日志")
-                input("\n按回车键继续...")
+                    print(f"\n[{get_text('error')}] {get_text('download_error')}")
+                input(f"\n{get_text('continue_prompt')}")
                 
             elif choice == '2':
-                print("\n[状态] 系统状态信息")
+                print(f"\n{get_text('menu_status').replace('[状态] ', '[').replace('[Status] ', '[')} {get_text('status_info')}")
                 print("-" * 50)
                 manager.show_status()
-                input("\n按回车键继续...")
+                input(f"\n{get_text('continue_prompt')}")
                 
             elif choice == '3':
-                print("\n[列表] 直播源文件列表")
+                print(f"\n{get_text('menu_list').replace('[列表] ', '[').replace('[List] ', '[')} {get_text('file_list')}")
                 print("-" * 50)
                 show_source_files(manager)
-                input("\n按回车键继续...")
+                input(f"\n{get_text('continue_prompt')}")
                 
             elif choice == '4':
-                print("\n[配置] 配置管理")
+                print(f"\n{get_text('menu_config').replace('[配置] ', '[').replace('[Config] ', '[')} {get_text('config_info')}")
                 print("-" * 50)
                 show_config_info(manager)
-                input("\n按回车键继续...")
+                input(f"\n{get_text('continue_prompt')}")
                 
             elif choice == '5':
-                print("\n[日志] 查看最新日志")
+                print(f"\n{get_text('menu_logs').replace('[日志] ', '[').replace('[Logs] ', '[')} {get_text('logs_recent')}")
                 print("-" * 50)
                 show_recent_logs(manager)
-                input("\n按回车键继续...")
+                input(f"\n{get_text('continue_prompt')}")
                 
             elif choice == '6':
-                print("\n[清理] 清理维护")
+                print(f"\n{get_text('menu_cleanup').replace('[清理] ', '[').replace('[Cleanup] ', '[')} {get_text('cleanup_maintenance')}")
                 print("-" * 50)
                 cleanup_files(manager)
-                input("\n按回车键继续...")
+                input(f"\n{get_text('continue_prompt')}")
                 
             elif choice == '7':
-                print("\n[卸载] 卸载程序")
+                print(f"\n{get_text('menu_uninstall').replace('[卸载] ', '[').replace('[Uninstall] ', '[')} {get_text('uninstall_program')}")
                 print("-" * 50)
                 if uninstall_program(manager):
-                    print("\n[完成] 程序已成功卸载")
+                    print(f"\n[Complete] Program uninstalled successfully")
                     return 0
                 else:
-                    print("\n[取消] 卸载操作已取消")
-                input("\n按回车键继续...")
+                    print(f"\n[Cancelled] Uninstall operation cancelled")
+                input(f"\n{get_text('continue_prompt')}")
                 
             else:
-                print("\n[错误] 无效选项，请输入 0-7 之间的数字")
-                input("按回车键继续...")
+                print(f"\n[{get_text('error')}] {get_text('invalid_option')}")
+                input(f"{get_text('continue_prompt')}")
                 
         except KeyboardInterrupt:
-            print("\n\n[中断] 用户中断，退出程序")
+            print(f"\n\n[{get_text('user_interrupt').split('，')[0].split(',')[0]}] {get_text('user_interrupt')}")
             return 130
         except Exception as e:
-            print(f"\n[错误] 操作失败: {e}")
-            input("按回车键继续...")
+            print(f"\n[{get_text('error')}] {get_text('operation_failed')}: {e}")
+            input(f"{get_text('continue_prompt')}")
 
 
 def show_source_files(manager):

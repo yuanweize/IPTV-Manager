@@ -1,13 +1,16 @@
 {
+  "language": "zh",
   "sources": {
     "domestic": {
       "name": "国内源",
+      "name_en": "Domestic Source",
       "url": "https://live.hacks.tools/tv/iptv4.m3u",
       "filename": "domestic.m3u",
       "enabled": true
     },
     "international": {
       "name": "国际源",
+      "name_en": "International Source",
       "url": "https://live.hacks.tools/iptv/index.m3u", 
       "filename": "international.m3u",
       "enabled": true

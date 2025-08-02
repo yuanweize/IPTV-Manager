@@ -19,11 +19,14 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # Virtual environments
 venv/
 env/
 ENV/
+.venv/
+.env/
 
 # IDE
 .vscode/
@@ -34,19 +37,27 @@ ENV/
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Logs
-*.log
-logs/
-
-# Data directories (when testing locally)
+# Project specific
 data/
 backup/
+logs/
+*.log
+*.m3u
+temp/
+tmp/
 
-# Temporary files
-*.tmp
-*.temp
+# Config (keep template)
+config.json.bak
+config_local.json
 
-# Test files (optional)
-test_install.sh
+# Test files
+test_*.py
+*_test.py
+tests/
