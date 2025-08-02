@@ -64,13 +64,13 @@ SKIP_INTERACTIVE=true CUSTOM_INSTALL_DIR=/opt/iptv bash install.sh
 
 支持以下环境变量进行非交互式配置：
 
-| 环境变量             | 说明           | 默认值              |
-| -------------------- | -------------- | ------------------- |
-| `SKIP_INTERACTIVE`   | 跳过交互模式   | `false`             |
-| `CUSTOM_INSTALL_DIR` | 自定义安装目录 | `/opt/IPTV-Manager` |
-| `CUSTOM_DATA_DIR`    | 自定义数据目录 | `{安装目录}/data`   |
-| `AUTO_RUN`           | 安装后自动运行 | `Y`                 |
-| `CREATE_SYMLINK`     | 创建全局命令软连接 | `Y`             |
+| 环境变量             | 说明               | 默认值              |
+| -------------------- | ------------------ | ------------------- |
+| `SKIP_INTERACTIVE`   | 跳过交互模式       | `false`             |
+| `CUSTOM_INSTALL_DIR` | 自定义安装目录     | `/opt/IPTV-Manager` |
+| `CUSTOM_DATA_DIR`    | 自定义数据目录     | `{安装目录}/data`   |
+| `AUTO_RUN`           | 安装后自动运行     | `Y`                 |
+| `CREATE_SYMLINK`     | 创建全局命令软连接 | `Y`                 |
 
 #### 使用示例
 
@@ -227,8 +227,11 @@ cd IPTV-Manager
 如果安装时创建了软连接，可以在任何位置直接使用：
 
 ```bash
-# 下载直播源
+# 进入交互式菜单（推荐）
 iptv
+
+# 直接下载直播源（用于脚本和定时任务）
+iptv --download
 
 # 查看状态
 iptv --status
@@ -243,8 +246,11 @@ iptv --help
 # 进入安装目录（默认为 /opt/IPTV-Manager）
 cd /opt/IPTV-Manager
 
-# 下载直播源
+# 进入交互式菜单
 python3 iptv_manager.py
+
+# 直接下载直播源
+python3 iptv_manager.py --download
 
 # 查看状态
 python3 iptv_manager.py --status
@@ -252,6 +258,35 @@ python3 iptv_manager.py --status
 # 查看帮助
 python3 iptv_manager.py --help
 ```
+
+### 交互式菜单
+
+直接运行 `iptv` 命令会进入友好的交互式菜单：
+
+```
+============================================================
+🎬 IPTV直播源管理系统
+============================================================
+请选择要执行的操作:
+
+1. 📥 下载/更新直播源
+2. 📊 查看系统状态
+3. 📋 查看直播源列表
+4. 🔧 配置管理
+5. 📝 查看日志
+6. 🧹 清理维护
+0. 🚪 退出程序
+
+============================================================
+```
+
+菜单功能说明：
+- **下载/更新直播源**: 执行主要的下载任务
+- **查看系统状态**: 显示详细的系统状态信息
+- **查看直播源列表**: 列出所有已下载的直播源文件
+- **配置管理**: 查看当前配置信息
+- **查看日志**: 显示最近的运行日志
+- **清理维护**: 清理过期的备份和日志文件
 
 ### 高级用法
 
@@ -265,6 +300,11 @@ python3 iptv_manager.py --config /path/to/config.json
 iptv --version
 # 或
 python3 iptv_manager.py --version
+
+# 直接下载模式（跳过菜单，用于脚本）
+iptv --download
+# 或
+python3 iptv_manager.py --download
 ```
 
 ### 定时任务设置
@@ -276,14 +316,14 @@ python3 iptv_manager.py --version
 crontab -e
 
 # 使用全局命令（推荐）
-0 */6 * * * iptv >> /opt/IPTV-Manager/logs/cron.log 2>&1
+0 */6 * * * iptv --download >> /opt/IPTV-Manager/logs/cron.log 2>&1
 
 # 或使用完整路径
-0 */6 * * * cd /opt/IPTV-Manager && python3 iptv_manager.py >> /opt/IPTV-Manager/logs/cron.log 2>&1
+0 */6 * * * cd /opt/IPTV-Manager && python3 iptv_manager.py --download >> /opt/IPTV-Manager/logs/cron.log 2>&1
 
 # 其他时间设置示例
-0 2 * * * iptv                    # 每天凌晨2点执行
-0 * * * * iptv                    # 每小时执行一次
+0 2 * * * iptv --download         # 每天凌晨2点执行
+0 * * * * iptv --download         # 每小时执行一次
 ```
 
 ## 目录结构
