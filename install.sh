@@ -44,8 +44,8 @@ show_progress_bar() {
     local empty=$((width - filled))
     
     printf "\r%s [" "$description"
-    printf "%*s" $filled | tr ' ' '█'
-    printf "%*s" $empty | tr ' ' '░'
+    printf "%*s" $filled | tr ' ' '#'
+    printf "%*s" $empty | tr ' ' '-'
     printf "] %d%% (%d/%d)" $percentage $current $total
     
     if [ $current -eq $total ]; then
@@ -78,7 +78,7 @@ get_user_preferences() {
         case ${path_choice:-1} in
             1)
                 INSTALL_DIR="$DEFAULT_INSTALL_DIR"
-                log_info "✓ 已选择默认安装路径: $INSTALL_DIR"
+                log_info "[OK] 已选择默认安装路径: $INSTALL_DIR"
                 ;;
             2)
                 echo
@@ -90,7 +90,7 @@ get_user_preferences() {
                     INSTALL_DIR="$DEFAULT_INSTALL_DIR"
                 else
                     INSTALL_DIR="$custom_path"
-                    log_info "✓ 已设置自定义安装路径: $INSTALL_DIR"
+                    log_info "[OK] 已设置自定义安装路径: $INSTALL_DIR"
                 fi
                 ;;
             *)
@@ -117,7 +117,7 @@ get_user_preferences() {
         case ${data_choice:-1} in
             1)
                 DATA_DIR="$INSTALL_DIR/data"
-                log_info "✓ 已选择默认数据目录: $DATA_DIR"
+                log_info "[OK] 已选择默认数据目录: $DATA_DIR"
                 ;;
             2)
                 echo
@@ -134,7 +134,7 @@ get_user_preferences() {
                     DATA_DIR="$INSTALL_DIR/data"
                 else
                     DATA_DIR="$custom_data_dir"
-                    log_info "✓ 已设置自定义数据目录: $DATA_DIR"
+                    log_info "[OK] 已设置自定义数据目录: $DATA_DIR"
                 fi
                 ;;
             *)
@@ -159,9 +159,9 @@ get_user_preferences() {
         RUN_IMMEDIATELY=${run_immediately:-Y}
         
         if [[ "$RUN_IMMEDIATELY" =~ ^[Yy]$ ]]; then
-            log_info "✓ 将在安装完成后立即下载直播源"
+            log_info "[OK] 将在安装完成后立即下载直播源"
         else
-            log_info "✓ 仅完成安装，稍后可使用 'iptv' 命令手动运行"
+            log_info "[OK] 仅完成安装，稍后可使用 'iptv' 命令手动运行"
         fi
     else
         # 非交互模式，使用默认值或环境变量
@@ -173,11 +173,11 @@ get_user_preferences() {
     
     # 显示配置确认
     echo
-    echo -e "${BLUE}📋 安装配置确认${NC}"
+    echo -e "${BLUE} 安装配置确认${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo -e "${GREEN}✓${NC} 安装路径: $INSTALL_DIR"
-    echo -e "${GREEN}✓${NC} 数据目录: $DATA_DIR"
-    echo -e "${GREEN}✓${NC} 安装后立即运行: $RUN_IMMEDIATELY"
+    echo -e "${GREEN}[OK]${NC} 安装路径: $INSTALL_DIR"
+    echo -e "${GREEN}[OK]${NC} 数据目录: $DATA_DIR"
+    echo -e "${GREEN}[OK]${NC} 安装后立即运行: $RUN_IMMEDIATELY"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     # 检查是否可以交互
@@ -192,7 +192,7 @@ get_user_preferences() {
             echo "安装已取消。如需重新配置，请重新运行安装脚本。"
             exit 0
         fi
-        echo "✓ 配置确认，开始安装"
+        echo "[OK] 配置确认，开始安装"
     fi
     
     echo
@@ -217,7 +217,7 @@ check_root() {
                 echo "  ./install.sh"
                 exit 1
             fi
-            echo "✓ 继续使用root用户安装"
+            echo "[OK] 继续使用root用户安装"
         else
             # 通过管道执行或非交互模式，自动继续但给出警告
             echo "模式: 非交互模式，自动继续安装（3秒后开始）"
@@ -228,44 +228,44 @@ check_root() {
 
 # 检查系统类型
 check_system() {
-    echo "  🔍 检查系统兼容性..."
+    echo "  [检查] 系统兼容性..."
     
     if [[ ! -f /etc/debian_version ]]; then
-        echo "  ❌ 系统不兼容"
+        echo "  [错误] 系统不兼容"
         echo "     错误: 此脚本仅支持Debian/Ubuntu系统"
         echo "     当前系统: $(uname -s)"
         exit 1
     fi
     
     local system_info=$(lsb_release -d 2>/dev/null | cut -f2 || echo "Debian/Ubuntu")
-    echo "  ✓ 系统兼容性检查通过: $system_info"
+    echo "  [OK] 系统兼容性检查通过: $system_info"
 }
 
 # 安装系统依赖
 install_system_deps() {
-    echo "  📦 更新软件包列表..."
+    echo "  [更新] 软件包列表..."
     sudo apt update > /dev/null 2>&1
     
     # 安装Python3和相关包
     if ! command -v python3 &> /dev/null; then
-        echo "  🐍 安装Python3..."
+        echo "  [安装] Python3..."
         sudo apt install -y python3 > /dev/null 2>&1
     else
-        echo "  ✓ Python3已安装: $(python3 --version)"
+        echo "  [OK] Python3已安装: $(python3 --version)"
     fi
     
     # 安装Python开发包和pip相关组件
-    echo "  🔧 安装Python开发包..."
+    echo "  [安装] Python开发包..."
     sudo apt install -y python3-pip python3-distutils python3-setuptools python3-dev python3-venv > /dev/null 2>&1
     
     # 安装其他必要工具
-    echo "  🛠️  安装必要工具..."
+    echo "  [安装] 必要工具..."
     sudo apt install -y curl wget cron > /dev/null 2>&1
 }
 
 # 下载项目文件
 download_files() {
-    echo "  📦 下载项目文件..."
+    echo "  [下载] 项目文件..."
     
     # 创建临时目录
     TEMP_DIR=$(mktemp -d)
@@ -279,12 +279,12 @@ download_files() {
     
     for file in "${files[@]}"; do
         current_file=$((current_file + 1))
-        echo "  📥 下载 $file ($current_file/$total_files)..."
+        echo "  [下载] $file ($current_file/$total_files)..."
         
         if curl -fsSL "${GITHUB_RAW_URL}/${file}" -o "$file" 2>/dev/null; then
-            echo "    ✓ $file 下载成功"
+            echo "    [OK] $file 下载成功"
         else
-            echo "    ✗ $file 下载失败"
+            echo "    [错误] $file 下载失败"
             rm -rf "$TEMP_DIR"
             exit 1
         fi
@@ -301,39 +301,39 @@ install_python_deps() {
     
     # 方法1: 尝试使用系统pip3
     if command -v pip3 &> /dev/null && pip3 --version &> /dev/null 2>&1; then
-        echo "  🐍 使用系统pip3安装依赖..."
+        echo "  [安装] 使用系统pip3安装依赖..."
         if pip3 install requests chardet --user &> /dev/null; then
             install_success=true
-            echo "    ✓ 依赖安装成功"
+            echo "    [OK] 依赖安装成功"
         fi
     fi
     
     # 方法2: 使用python -m pip
     if [ "$install_success" = false ]; then
-        echo "  🔄 使用python -m pip安装依赖..."
+        echo "  [重试] 使用python -m pip安装依赖..."
         if python3 -m pip install requests chardet --user &> /dev/null; then
             install_success=true
-            echo "    ✓ 依赖安装成功"
+            echo "    [OK] 依赖安装成功"
         fi
     fi
     
     # 方法3: 重新安装pip后再试
     if [ "$install_success" = false ]; then
-        echo "  🔧 重新安装pip后再试..."
+        echo "  [修复] 重新安装pip后再试..."
         if curl -sS https://bootstrap.pypa.io/get-pip.py | python3 - --user &> /dev/null; then
             export PATH="$HOME/.local/bin:$PATH"
             if python3 -m pip install requests chardet --user &> /dev/null; then
                 install_success=true
-                echo "    ✓ 依赖安装成功"
+                echo "    [OK] 依赖安装成功"
             fi
         fi
     fi
     
     # 验证安装结果
     if python3 -c "import requests, chardet" 2>/dev/null; then
-        echo "  ✅ Python依赖验证通过"
+        echo "  [OK] Python依赖验证通过"
     else
-        echo "  ❌ Python依赖安装失败"
+        echo "  [错误] Python依赖安装失败"
         echo
         echo "请手动执行以下命令安装依赖："
         echo "  python3 -m pip install requests chardet --user"
@@ -347,12 +347,12 @@ install_python_deps() {
 
 # 创建目录结构
 create_directories() {
-    echo "  📁 创建基础目录: $INSTALL_DIR"
+    echo "  [创建] 基础目录: $INSTALL_DIR"
     sudo mkdir -p "$INSTALL_DIR"
     
     # 创建数据目录（可能在不同位置）
     if [[ "$DATA_DIR" != "$INSTALL_DIR/data" ]]; then
-        echo "  📁 创建自定义数据目录: $DATA_DIR"
+        echo "  [创建] 自定义数据目录: $DATA_DIR"
         mkdir -p "$DATA_DIR"
         # 如果数据目录需要sudo权限
         if [[ ! -w "$(dirname "$DATA_DIR")" ]]; then
@@ -360,16 +360,16 @@ create_directories() {
             sudo chown -R $USER:$USER "$DATA_DIR"
         fi
     else
-        echo "  📁 创建数据目录: $DATA_DIR"
+        echo "  [创建] 数据目录: $DATA_DIR"
         mkdir -p "$DATA_DIR"
     fi
     
     # 创建其他子目录
-    echo "  📁 创建备份和日志目录..."
+    echo "  [创建] 备份和日志目录..."
     mkdir -p "$INSTALL_DIR"/{backup,logs}
     
     # 设置权限
-    echo "  🔐 设置目录权限..."
+    echo "  [权限] 设置目录权限..."
     sudo chown -R $USER:$USER "$INSTALL_DIR"
     chmod 755 "$INSTALL_DIR"
     chmod 755 "$INSTALL_DIR"/{backup,logs}
@@ -378,7 +378,7 @@ create_directories() {
 
 # 安装脚本文件
 install_scripts() {
-    echo "  📋 安装脚本文件..."
+    echo "  [安装] 脚本文件..."
     
     # 修改配置文件中的路径
     echo "     更新配置文件路径设置..."
@@ -395,9 +395,9 @@ with open('config.json', 'w') as f:
 " 2>/dev/null
     
     if [ $? -eq 0 ]; then
-        echo "     ✓ 配置文件更新成功"
+        echo "     [OK] 配置文件更新成功"
     else
-        echo "     ❌ 配置文件更新失败"
+        echo "     [错误] 配置文件更新失败"
         exit 1
     fi
     
@@ -407,14 +407,14 @@ with open('config.json', 'w') as f:
     for file in iptv_manager.py config.json requirements.txt; do
         if [[ -f "$file" ]]; then
             if cp "$file" "$INSTALL_DIR/" 2>/dev/null; then
-                echo "       ✓ $file"
+                echo "       [OK] $file"
                 files_copied=$((files_copied + 1))
             else
-                echo "       ❌ $file (复制失败)"
+                echo "       [错误] $file (复制失败)"
                 exit 1
             fi
         else
-            echo "       ❌ $file (文件不存在)"
+            echo "       [错误] $file (文件不存在)"
             exit 1
         fi
     done
@@ -422,17 +422,17 @@ with open('config.json', 'w') as f:
     # 设置执行权限
     echo "     设置执行权限..."
     if chmod +x "$INSTALL_DIR/iptv_manager.py" 2>/dev/null; then
-        echo "     ✓ 执行权限设置成功"
+        echo "     [OK] 执行权限设置成功"
     else
-        echo "     ⚠️  执行权限设置失败，但不影响使用"
+        echo "     [警告] 执行权限设置失败，但不影响使用"
     fi
     
-    echo "  ✓ 共安装 $files_copied 个文件"
+    echo "  [OK] 共安装 $files_copied 个文件"
 }
 
 # 创建软连接
 create_symlink() {
-    echo "  🔗 配置全局命令软连接..."
+    echo "  [配置] 全局命令软连接..."
     
     local symlink_path="/usr/local/bin/iptv"
     local target_script="$INSTALL_DIR/iptv_manager.py"
@@ -457,9 +457,9 @@ create_symlink() {
         create_link=${create_link:-Y}
         
         if [[ "$create_link" =~ ^[Yy]$ ]]; then
-            echo "✓ 将创建全局命令软连接"
+            echo "[OK] 将创建全局命令软连接"
         else
-            echo "✓ 跳过软连接创建"
+            echo "[OK] 跳过软连接创建"
         fi
     else
         # 非交互模式，使用环境变量或默认值
@@ -472,10 +472,10 @@ create_symlink() {
             # 是软连接，检查目标是否正确
             current_target=$(readlink "$symlink_path" 2>/dev/null || echo "")
             if [[ "$current_target" == "$target_script" ]]; then
-                echo "  ✓ 软连接已存在且指向正确位置"
+                echo "  [OK] 软连接已存在且指向正确位置"
                 return
             else
-                echo "  🔄 软连接存在但指向不同位置，正在更新..."
+                echo "  [更新] 软连接存在但指向不同位置，正在更新..."
                 echo "     当前指向: $current_target"
                 echo "     更新指向: $target_script"
                 sudo rm -f "$symlink_path"
@@ -485,14 +485,14 @@ create_symlink() {
             if grep -q "cd.*iptv_manager.py" "$symlink_path" 2>/dev/null; then
                 # 是我们的包装脚本，检查路径是否正确
                 if grep -q "cd \"$INSTALL_DIR\"" "$symlink_path" 2>/dev/null; then
-                    echo "  ✓ 包装脚本已存在且路径正确"
+                    echo "  [OK] 包装脚本已存在且路径正确"
                     return
                 else
-                    echo "  🔄 包装脚本存在但路径不同，正在更新..."
+                    echo "  [更新] 包装脚本存在但路径不同，正在更新..."
                     sudo rm -f "$symlink_path"
                 fi
             else
-                echo "  ⚠️  发现同名文件但不是IPTV相关，跳过软连接创建"
+                echo "  [警告] 发现同名文件但不是IPTV相关，跳过软连接创建"
                 echo "     文件位置: $symlink_path"
                 echo "     请手动处理后重新安装"
                 return
@@ -500,7 +500,7 @@ create_symlink() {
         fi
         
         # 创建包装脚本以确保在正确目录执行
-        echo "  📝 创建包装脚本..."
+        echo "  [创建] 包装脚本..."
         local wrapper_script="/tmp/iptv_wrapper_$$"
         cat > "$wrapper_script" << EOF
 #!/bin/bash
@@ -512,24 +512,24 @@ EOF
         chmod +x "$wrapper_script"
         
         if sudo mv "$wrapper_script" "$symlink_path" 2>/dev/null; then
-            echo "  ✓ 全局命令创建成功: $symlink_path"
+            echo "  [OK] 全局命令创建成功: $symlink_path"
             echo "     目标目录: $INSTALL_DIR"
             echo "     现在可以在任何位置使用 'iptv' 命令"
         else
-            echo "  ❌ 全局命令创建失败"
+            echo "  [错误] 全局命令创建失败"
             echo "     原因: 可能需要管理员权限"
             echo "     手动创建: sudo ln -sf $target_script $symlink_path"
             rm -f "$wrapper_script" 2>/dev/null
         fi
     else
-        echo "  ✓ 跳过软连接创建"
+        echo "  [OK] 跳过软连接创建"
         echo "     使用方法: cd $INSTALL_DIR && python3 iptv_manager.py"
     fi
 }
 
 # 测试安装
 test_installation() {
-    echo "  🧪 测试安装结果..."
+    echo "  [测试] 安装结果..."
     
     # 保存当前目录
     ORIGINAL_DIR=$(pwd)
@@ -540,9 +540,9 @@ test_installation() {
     # 测试脚本语法
     echo "     检查脚本语法..."
     if python3 -m py_compile iptv_manager.py 2>/dev/null; then
-        echo "     ✓ 脚本语法检查通过"
+        echo "     [OK] 脚本语法检查通过"
     else
-        echo "     ❌ 脚本语法检查失败"
+        echo "     [错误] 脚本语法检查失败"
         cd "$ORIGINAL_DIR"
         exit 1
     fi
@@ -550,9 +550,9 @@ test_installation() {
     # 测试配置文件
     echo "     检查配置文件..."
     if python3 -c "import json; json.load(open('config.json'))" 2>/dev/null; then
-        echo "     ✓ 配置文件格式正确"
+        echo "     [OK] 配置文件格式正确"
     else
-        echo "     ❌ 配置文件格式错误"
+        echo "     [错误] 配置文件格式错误"
         cd "$ORIGINAL_DIR"
         exit 1
     fi
@@ -560,9 +560,9 @@ test_installation() {
     # 测试运行
     echo "     测试程序运行..."
     if python3 iptv_manager.py --status >/dev/null 2>&1; then
-        echo "     ✓ 程序运行测试通过"
+        echo "     [OK] 程序运行测试通过"
     else
-        echo "     ✓ 程序基础功能正常（首次运行无数据是正常的）"
+        echo "     [OK] 程序基础功能正常（首次运行无数据是正常的）"
     fi
     
     # 返回原目录
@@ -571,7 +571,7 @@ test_installation() {
 
 # 设置定时任务
 setup_cron() {
-    echo "  ⏰ 配置定时任务..."
+    echo "  [配置] 定时任务..."
     
     local choice
     
@@ -597,11 +597,11 @@ setup_cron() {
         choice=${choice:-1}
         
         case $choice in
-            1) echo "✓ 已选择：每6小时执行一次" ;;
-            2) echo "✓ 已选择：每天凌晨2点执行" ;;
-            3) echo "✓ 已选择：每小时执行一次" ;;
-            4) echo "✓ 已选择：跳过定时任务设置" ;;
-            *) echo "✓ 无效选择，使用默认：每6小时执行一次"; choice=1 ;;
+            1) echo "[OK] 已选择：每6小时执行一次" ;;
+            2) echo "[OK] 已选择：每天凌晨2点执行" ;;
+            3) echo "[OK] 已选择：每小时执行一次" ;;
+            4) echo "[OK] 已选择：跳过定时任务设置" ;;
+            *) echo "[OK] 无效选择，使用默认：每6小时执行一次"; choice=1 ;;
         esac
     else
         # 非交互模式，使用默认值
@@ -620,7 +620,7 @@ setup_cron() {
             CRON_ENTRY="0 * * * * cd $INSTALL_DIR && python3 iptv_manager.py --download >> $INSTALL_DIR/logs/cron.log 2>&1"
             ;;
         4)
-            echo "  ✓ 跳过定时任务设置"
+            echo "  [OK] 跳过定时任务设置"
             return
             ;;
         *)
@@ -629,12 +629,12 @@ setup_cron() {
     esac
     
     # 添加到crontab
-    echo "  📝 添加定时任务到crontab..."
+    echo "  [添加] 定时任务到crontab..."
     if (crontab -l 2>/dev/null; echo "$CRON_ENTRY") | crontab - 2>/dev/null; then
-        echo "  ✓ 定时任务设置完成"
+        echo "  [OK] 定时任务设置完成"
         echo "     任务内容: $CRON_ENTRY"
     else
-        echo "  ⚠️  定时任务设置失败，请手动添加："
+        echo "  [警告] 定时任务设置失败，请手动添加："
         echo "     crontab -e"
         echo "     添加行: $CRON_ENTRY"
     fi
@@ -643,7 +643,7 @@ setup_cron() {
 # 立即运行脚本
 run_script() {
     if [[ "$RUN_IMMEDIATELY" =~ ^[Yy]$ ]]; then
-        echo "  🚀 立即下载直播源..."
+        echo "  [运行] 立即下载直播源..."
         echo "     正在初始化下载任务，请稍候..."
         echo "     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         
@@ -695,7 +695,7 @@ run_script() {
         printf "\r%*s\r" 70 ""  # 清除进度行
         
         if [ $exit_code -eq 0 ]; then
-            echo "     ✓ 直播源下载完成!"
+            echo "     [OK] 直播源下载完成!"
             echo "     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             
             # 显示下载结果
@@ -710,7 +710,7 @@ run_script() {
                 rm -f "$log_file"
             fi
         else
-            echo "     ❌ 直播源下载遇到问题"
+            echo "     [错误] 直播源下载遇到问题"
             echo "     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "     可能的原因:"
             echo "       • 网络连接问题"
@@ -867,7 +867,7 @@ main() {
         # 执行步骤
         $step_func
         
-        echo -e "${GREEN}✓${NC} $step_desc 完成"
+        echo -e "${GREEN}[OK]${NC} $step_desc 完成"
         echo
     done
     
