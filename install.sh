@@ -37,9 +37,11 @@ log_step() {
 get_user_preferences() {
     log_step "配置安装选项..."
     
-    # 检查是否可以交互
-    if [[ -t 0 ]]; then
-        # 可以交互，询问用户选择
+    # 强制进入交互模式，除非明确设置了环境变量跳过
+    if [[ "${SKIP_INTERACTIVE:-}" != "true" ]]; then
+        # 重新打开标准输入以确保可以交互
+        exec < /dev/tty 2>/dev/null || true
+        
         echo
         echo "请选择安装路径:"
         echo "1) 使用默认路径: $DEFAULT_INSTALL_DIR"
@@ -66,18 +68,47 @@ get_user_preferences() {
                 ;;
         esac
         
+        # 询问直播源文件保存目录
+        echo
+        echo "请选择直播源文件保存目录:"
+        echo "1) 使用默认目录: $INSTALL_DIR/data"
+        echo "2) 自定义目录"
+        echo
+        read -p "请输入选择 (1-2) [默认: 1]: " data_choice
+        
+        case ${data_choice:-1} in
+            1)
+                DATA_DIR="$INSTALL_DIR/data"
+                ;;
+            2)
+                read -p "请输入自定义直播源保存目录: " custom_data_dir
+                if [[ -z "$custom_data_dir" ]]; then
+                    log_warn "目录不能为空，使用默认目录"
+                    DATA_DIR="$INSTALL_DIR/data"
+                else
+                    DATA_DIR="$custom_data_dir"
+                fi
+                ;;
+            *)
+                log_warn "无效选择，使用默认目录"
+                DATA_DIR="$INSTALL_DIR/data"
+                ;;
+        esac
+        
         # 询问是否立即运行
         echo
         read -p "安装完成后是否立即下载直播源? (Y/n): " run_immediately
         RUN_IMMEDIATELY=${run_immediately:-Y}
     else
-        # 管道模式，使用默认值
-        log_info "管道模式检测到，使用默认配置"
-        INSTALL_DIR="$DEFAULT_INSTALL_DIR"
-        RUN_IMMEDIATELY="Y"
+        # 非交互模式，使用默认值或环境变量
+        log_info "非交互模式检测到，使用默认配置"
+        INSTALL_DIR="${CUSTOM_INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
+        DATA_DIR="${CUSTOM_DATA_DIR:-$INSTALL_DIR/data}"
+        RUN_IMMEDIATELY="${AUTO_RUN:-Y}"
     fi
     
     log_info "安装路径: $INSTALL_DIR"
+    log_info "数据目录: $DATA_DIR"
     log_info "安装后立即运行: $RUN_IMMEDIATELY"
     echo
 }
@@ -225,13 +256,27 @@ create_directories() {
     log_info "创建基础目录: $INSTALL_DIR"
     sudo mkdir -p "$INSTALL_DIR"
     
-    # 创建子目录
-    mkdir -p "$INSTALL_DIR"/{data,backup,logs}
+    # 创建数据目录（可能在不同位置）
+    if [[ "$DATA_DIR" != "$INSTALL_DIR/data" ]]; then
+        log_info "创建自定义数据目录: $DATA_DIR"
+        mkdir -p "$DATA_DIR"
+        # 如果数据目录需要sudo权限
+        if [[ ! -w "$(dirname "$DATA_DIR")" ]]; then
+            sudo mkdir -p "$DATA_DIR"
+            sudo chown -R $USER:$USER "$DATA_DIR"
+        fi
+    else
+        mkdir -p "$DATA_DIR"
+    fi
+    
+    # 创建其他子目录
+    mkdir -p "$INSTALL_DIR"/{backup,logs}
     
     # 设置权限
     sudo chown -R $USER:$USER "$INSTALL_DIR"
     chmod 755 "$INSTALL_DIR"
-    chmod 755 "$INSTALL_DIR"/{data,backup,logs}
+    chmod 755 "$INSTALL_DIR"/{backup,logs}
+    chmod 755 "$DATA_DIR"
     
     log_info "目录结构创建完成"
 }
@@ -240,18 +285,19 @@ create_directories() {
 install_scripts() {
     log_step "安装脚本文件..."
     
-    # 修改配置文件中的安装路径
-    if [[ "$INSTALL_DIR" != "$DEFAULT_INSTALL_DIR" ]]; then
-        log_info "更新配置文件中的安装路径..."
-        python3 -c "
+    # 修改配置文件中的路径
+    log_info "更新配置文件中的路径设置..."
+    python3 -c "
 import json
 with open('config.json', 'r') as f:
     config = json.load(f)
 config['directories']['base_dir'] = '$INSTALL_DIR'
+config['directories']['data_dir'] = '$DATA_DIR'
+config['directories']['backup_dir'] = '$INSTALL_DIR/backup'
+config['directories']['log_dir'] = '$INSTALL_DIR/logs'
 with open('config.json', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
 "
-    fi
     
     # 复制文件到目标目录
     for file in iptv_manager.py config.json requirements.txt; do
@@ -268,6 +314,74 @@ with open('config.json', 'w') as f:
     chmod +x "$INSTALL_DIR/iptv_manager.py"
     
     log_info "脚本文件安装完成"
+}
+
+# 创建软连接
+create_symlink() {
+    log_step "创建软连接..."
+    
+    local symlink_path="/usr/local/bin/iptv"
+    local target_script="$INSTALL_DIR/iptv_manager.py"
+    
+    # 检查是否可以交互
+    if [[ "${SKIP_INTERACTIVE:-}" != "true" ]]; then
+        # 重新打开标准输入以确保可以交互
+        exec < /dev/tty 2>/dev/null || true
+        
+        echo
+        echo "是否创建全局命令软连接？"
+        echo "创建后可以在任何位置使用 'iptv' 命令"
+        echo "软连接位置: $symlink_path"
+        echo
+        read -p "创建软连接? (Y/n): " create_link
+        create_link=${create_link:-Y}
+    else
+        # 非交互模式，使用环境变量或默认值
+        create_link="${CREATE_SYMLINK:-Y}"
+    fi
+    
+    if [[ "$create_link" =~ ^[Yy]$ ]]; then
+        # 检查是否已存在
+        if [[ -L "$symlink_path" ]]; then
+            log_warn "软连接已存在，正在更新..."
+            sudo rm -f "$symlink_path"
+        elif [[ -f "$symlink_path" ]]; then
+            log_warn "发现同名文件 $symlink_path，跳过软连接创建"
+            return
+        fi
+        
+        # 创建软连接
+        if sudo ln -sf "$target_script" "$symlink_path"; then
+            log_info "✓ 软连接创建成功: $symlink_path -> $target_script"
+            
+            # 创建包装脚本以确保在正确目录执行
+            local wrapper_script="/tmp/iptv_wrapper"
+            cat > "$wrapper_script" << EOF
+#!/bin/bash
+# IPTV Manager 包装脚本
+cd "$INSTALL_DIR" && python3 iptv_manager.py "\$@"
+EOF
+            chmod +x "$wrapper_script"
+            sudo mv "$wrapper_script" "$symlink_path"
+            
+            log_info "现在可以在任何位置使用 'iptv' 命令了！"
+            echo
+            echo "使用示例:"
+            echo "  iptv                    # 下载直播源"
+            echo "  iptv --status          # 查看状态"
+            echo "  iptv --help            # 查看帮助"
+        else
+            log_warn "软连接创建失败，可能需要管理员权限"
+            echo "你可以手动创建软连接："
+            echo "  sudo ln -sf $target_script $symlink_path"
+        fi
+    else
+        log_info "跳过软连接创建"
+        echo "你可以通过以下方式使用脚本："
+        echo "  cd $INSTALL_DIR && python3 iptv_manager.py"
+    fi
+    
+    echo
 }
 
 # 测试安装
@@ -392,33 +506,74 @@ show_completion() {
     echo -e "${BLUE}主脚本:${NC} $INSTALL_DIR/iptv_manager.py"
     echo
     echo -e "${YELLOW}使用方法:${NC}"
-    echo "  cd $INSTALL_DIR"
-    echo "  python3 iptv_manager.py          # 执行下载任务"
-    echo "  python3 iptv_manager.py --status # 查看状态"
-    echo "  python3 iptv_manager.py --help   # 查看帮助"
+    if [[ -f "/usr/local/bin/iptv" ]]; then
+        echo "  iptv                              # 执行下载任务（全局命令）"
+        echo "  iptv --status                     # 查看状态"
+        echo "  iptv --help                       # 查看帮助"
+        echo
+        echo "  或者使用完整路径："
+        echo "  cd $INSTALL_DIR"
+        echo "  python3 iptv_manager.py          # 执行下载任务"
+    else
+        echo "  cd $INSTALL_DIR"
+        echo "  python3 iptv_manager.py          # 执行下载任务"
+        echo "  python3 iptv_manager.py --status # 查看状态"
+        echo "  python3 iptv_manager.py --help   # 查看帮助"
+    fi
     echo
     echo -e "${YELLOW}数据目录:${NC}"
-    echo "  直播源文件: $INSTALL_DIR/data/"
+    echo "  直播源文件: $DATA_DIR"
     echo "  备份文件: $INSTALL_DIR/backup/"
     echo "  日志文件: $INSTALL_DIR/logs/"
     echo
     echo -e "${YELLOW}配置修改:${NC}"
     echo "  编辑 $INSTALL_DIR/config.json 来修改配置"
+    echo "  数据目录可在配置文件中的 directories.data_dir 字段修改"
     echo
     echo -e "${GREEN}安装完成! 享受使用吧!${NC}"
 }
 
+# 显示帮助信息
+show_help() {
+    echo "IPTV直播源管理脚本一键安装程序"
+    echo "========================================"
+    echo
+    echo "使用方法:"
+    echo "  bash install.sh                    # 交互式安装"
+    echo "  curl -fsSL <url> | bash            # 使用默认配置安装"
+    echo
+    echo "环境变量配置（非交互模式）:"
+    echo "  SKIP_INTERACTIVE=true             # 跳过交互，使用默认或环境变量配置"
+    echo "  CUSTOM_INSTALL_DIR=/path/to/dir   # 自定义安装目录"
+    echo "  CUSTOM_DATA_DIR=/path/to/data     # 自定义数据目录"
+    echo "  AUTO_RUN=Y                        # 安装后自动运行（Y/n）"
+    echo "  CREATE_SYMLINK=Y                  # 创建全局命令软连接（Y/n）"
+    echo
+    echo "示例:"
+    echo "  CUSTOM_INSTALL_DIR=/home/user/iptv CUSTOM_DATA_DIR=/media/iptv bash install.sh"
+    echo "  SKIP_INTERACTIVE=true bash install.sh"
+    echo
+}
+
 # 主函数
 main() {
+    # 检查是否需要显示帮助
+    if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+        show_help
+        exit 0
+    fi
+    
     echo -e "${BLUE}IPTV直播源管理脚本一键安装程序${NC}"
     echo "========================================"
     echo
     
     # 显示执行模式
-    if [[ -t 0 ]]; then
+    if [[ "${SKIP_INTERACTIVE:-}" == "true" ]]; then
+        log_info "非交互模式：使用环境变量或默认配置"
+    elif [[ -t 0 ]]; then
         log_info "交互模式：将询问配置选项"
     else
-        log_info "管道模式：使用默认配置自动安装"
+        log_info "管道模式：尝试交互，如失败则使用默认配置"
     fi
     echo
     
@@ -433,6 +588,7 @@ main() {
     install_python_deps
     create_directories
     install_scripts
+    create_symlink
     test_installation
     setup_cron
     run_script
