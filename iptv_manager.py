@@ -626,17 +626,18 @@ class IPTVManager:
 def show_menu():
     """显示交互式菜单"""
     print("\n" + "="*60)
-    print("🎬 IPTV直播源管理系统")
+    print("    IPTV直播源管理系统")
     print("="*60)
     print("请选择要执行的操作:")
     print()
-    print("1. 📥 下载/更新直播源")
-    print("2. 📊 查看系统状态")
-    print("3. 📋 查看直播源列表")
-    print("4. 🔧 配置管理")
-    print("5. 📝 查看日志")
-    print("6. 🧹 清理维护")
-    print("0. 🚪 退出程序")
+    print("1. [下载] 下载/更新直播源")
+    print("2. [状态] 查看系统状态")
+    print("3. [列表] 查看直播源列表")
+    print("4. [配置] 配置管理")
+    print("5. [日志] 查看日志")
+    print("6. [清理] 清理维护")
+    print("7. [卸载] 卸载程序")
+    print("0. [退出] 退出程序")
     print()
     print("="*60)
 
@@ -646,79 +647,110 @@ def interactive_mode(manager):
     while True:
         try:
             show_menu()
-            choice = input("请输入选项 (0-6): ").strip()
+            choice = input("请输入选项 (0-7): ").strip()
             
             if choice == '0':
-                print("\n👋 感谢使用 IPTV 管理系统，再见！")
+                print("\n[退出] 感谢使用 IPTV 管理系统，再见！")
                 return 0
                 
             elif choice == '1':
-                print("\n🚀 开始下载/更新直播源...")
+                print("\n[下载] 开始下载/更新直播源...")
                 print("-" * 50)
                 result = manager.run()
                 if result == 0:
-                    print("\n✅ 直播源更新完成！")
+                    print("\n[完成] 直播源更新完成！")
                 else:
-                    print("\n❌ 直播源更新遇到问题，请查看日志")
+                    print("\n[错误] 直播源更新遇到问题，请查看日志")
                 input("\n按回车键继续...")
                 
             elif choice == '2':
-                print("\n📊 系统状态信息")
+                print("\n[状态] 系统状态信息")
                 print("-" * 50)
                 manager.show_status()
                 input("\n按回车键继续...")
                 
             elif choice == '3':
-                print("\n📋 直播源文件列表")
+                print("\n[列表] 直播源文件列表")
                 print("-" * 50)
                 show_source_files(manager)
                 input("\n按回车键继续...")
                 
             elif choice == '4':
-                print("\n🔧 配置管理")
+                print("\n[配置] 配置管理")
                 print("-" * 50)
                 show_config_info(manager)
                 input("\n按回车键继续...")
                 
             elif choice == '5':
-                print("\n📝 查看最新日志")
+                print("\n[日志] 查看最新日志")
                 print("-" * 50)
                 show_recent_logs(manager)
                 input("\n按回车键继续...")
                 
             elif choice == '6':
-                print("\n🧹 清理维护")
+                print("\n[清理] 清理维护")
                 print("-" * 50)
                 cleanup_files(manager)
                 input("\n按回车键继续...")
                 
+            elif choice == '7':
+                print("\n[卸载] 卸载程序")
+                print("-" * 50)
+                if uninstall_program(manager):
+                    print("\n[完成] 程序已成功卸载")
+                    return 0
+                else:
+                    print("\n[取消] 卸载操作已取消")
+                input("\n按回车键继续...")
+                
             else:
-                print("\n❌ 无效选项，请输入 0-6 之间的数字")
+                print("\n[错误] 无效选项，请输入 0-7 之间的数字")
                 input("按回车键继续...")
                 
         except KeyboardInterrupt:
-            print("\n\n👋 用户中断，退出程序")
+            print("\n\n[中断] 用户中断，退出程序")
             return 130
         except Exception as e:
-            print(f"\n❌ 操作失败: {e}")
+            print(f"\n[错误] 操作失败: {e}")
             input("按回车键继续...")
 
 
 def show_source_files(manager):
     """显示直播源文件信息"""
     try:
-        data_dir = Path(manager.config['directories']['data_dir'])
+        # 获取数据目录路径
+        if hasattr(manager.config, 'get'):
+            # 如果config是字典
+            data_dir_path = manager.config.get('directories', {}).get('data_dir')
+        else:
+            # 如果config是对象，尝试访问属性
+            data_dir_path = getattr(manager.config, 'data_dir', None)
+            if not data_dir_path:
+                # 尝试从directories属性获取
+                directories = getattr(manager.config, 'directories', {})
+                if hasattr(directories, 'get'):
+                    data_dir_path = directories.get('data_dir')
+                else:
+                    data_dir_path = getattr(directories, 'data_dir', None)
+        
+        if not data_dir_path:
+            print("[错误] 无法获取数据目录配置")
+            return
+            
+        data_dir = Path(data_dir_path)
         if not data_dir.exists():
-            print("📁 数据目录不存在，请先下载直播源")
+            print(f"[信息] 数据目录不存在: {data_dir}")
+            print("       请先执行下载操作")
             return
             
         m3u_files = list(data_dir.glob("*.m3u"))
         if not m3u_files:
-            print("📁 未找到直播源文件，请先下载直播源")
+            print(f"[信息] 数据目录: {data_dir}")
+            print("       未找到直播源文件，请先下载直播源")
             return
             
-        print(f"📁 数据目录: {data_dir}")
-        print(f"📊 共找到 {len(m3u_files)} 个直播源文件:")
+        print(f"[目录] {data_dir}")
+        print(f"[统计] 共找到 {len(m3u_files)} 个直播源文件:")
         print()
         
         for i, file_path in enumerate(m3u_files, 1):
@@ -734,73 +766,131 @@ def show_source_files(manager):
             else:
                 size_str = f"{size / (1024 * 1024):.1f} MB"
                 
-            print(f"{i:2d}. 📺 {file_path.name}")
-            print(f"     📏 大小: {size_str}")
-            print(f"     🕒 更新时间: {mtime.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"{i:2d}. [文件] {file_path.name}")
+            print(f"    [大小] {size_str}")
+            print(f"    [时间] {mtime.strftime('%Y-%m-%d %H:%M:%S')}")
             print()
             
     except Exception as e:
-        print(f"❌ 获取文件信息失败: {e}")
+        print(f"[错误] 获取文件信息失败: {e}")
+        print(f"[调试] 错误类型: {type(e).__name__}")
+        print(f"[调试] 配置对象类型: {type(manager.config)}")
+        if hasattr(manager.config, '__dict__'):
+            print(f"[调试] 配置对象属性: {list(manager.config.__dict__.keys())}")
 
 
 def show_config_info(manager):
     """显示配置信息"""
     try:
         config = manager.config
-        print("⚙️  当前配置信息:")
+        print("[配置] 当前配置信息:")
         print()
         
         # 目录配置
-        print("📁 目录配置:")
-        dirs = config.get('directories', {})
-        for key, value in dirs.items():
-            print(f"   {key}: {value}")
+        print("[目录] 目录配置:")
+        if hasattr(config, 'get'):
+            dirs = config.get('directories', {})
+        else:
+            dirs = getattr(config, 'directories', {})
+            
+        if hasattr(dirs, 'items'):
+            for key, value in dirs.items():
+                print(f"   {key}: {value}")
+        elif hasattr(dirs, '__dict__'):
+            for key, value in dirs.__dict__.items():
+                print(f"   {key}: {value}")
         print()
         
         # 直播源配置
-        print("📺 直播源配置:")
-        sources = config.get('sources', {})
-        enabled_count = sum(1 for s in sources.values() if s.get('enabled', True))
-        print(f"   总数: {len(sources)} 个")
-        print(f"   启用: {enabled_count} 个")
-        print()
-        
-        for name, source in sources.items():
-            status = "✅ 启用" if source.get('enabled', True) else "❌ 禁用"
-            print(f"   • {source.get('name', name)} ({status})")
-            print(f"     URL: {source.get('url', 'N/A')}")
-            print(f"     文件: {source.get('filename', 'N/A')}")
+        print("[源站] 直播源配置:")
+        if hasattr(config, 'get'):
+            sources = config.get('sources', {})
+        else:
+            sources = getattr(config, 'sources', {})
+            
+        if hasattr(sources, 'items'):
+            enabled_count = sum(1 for s in sources.values() if (hasattr(s, 'get') and s.get('enabled', True)) or (hasattr(s, 'enabled') and getattr(s, 'enabled', True)))
+            print(f"   总数: {len(sources)} 个")
+            print(f"   启用: {enabled_count} 个")
             print()
             
+            for name, source in sources.items():
+                if hasattr(source, 'get'):
+                    enabled = source.get('enabled', True)
+                    source_name = source.get('name', name)
+                    url = source.get('url', 'N/A')
+                    filename = source.get('filename', 'N/A')
+                else:
+                    enabled = getattr(source, 'enabled', True)
+                    source_name = getattr(source, 'name', name)
+                    url = getattr(source, 'url', 'N/A')
+                    filename = getattr(source, 'filename', 'N/A')
+                    
+                status = "[启用]" if enabled else "[禁用]"
+                print(f"   • {source_name} {status}")
+                print(f"     URL: {url}")
+                print(f"     文件: {filename}")
+                print()
+        print()
+        
         # 下载配置
-        print("⚡ 下载配置:")
-        download = config.get('download', {})
-        print(f"   超时时间: {download.get('timeout', 30)} 秒")
-        print(f"   重试次数: {download.get('retry_count', 3)} 次")
-        print(f"   并发数: {download.get('max_workers', 4)} 个")
+        print("[下载] 下载配置:")
+        if hasattr(config, 'get'):
+            download = config.get('download', {})
+        else:
+            download = getattr(config, 'download', {})
+            
+        if hasattr(download, 'get'):
+            timeout = download.get('timeout', 30)
+            retry_count = download.get('retry_count', 3)
+            max_workers = download.get('max_workers', 4)
+        else:
+            timeout = getattr(download, 'timeout', 30)
+            retry_count = getattr(download, 'retry_count', 3)
+            max_workers = getattr(download, 'max_workers', 4)
+            
+        print(f"   超时时间: {timeout} 秒")
+        print(f"   重试次数: {retry_count} 次")
+        print(f"   并发数: {max_workers} 个")
         print()
         
     except Exception as e:
-        print(f"❌ 获取配置信息失败: {e}")
+        print(f"[错误] 获取配置信息失败: {e}")
+        print(f"[调试] 错误类型: {type(e).__name__}")
+        print(f"[调试] 配置对象类型: {type(manager.config)}")
 
 
 def show_recent_logs(manager):
     """显示最近的日志"""
     try:
-        log_dir = Path(manager.config['directories']['log_dir'])
+        # 获取日志目录
+        if hasattr(manager.config, 'get'):
+            log_dir_path = manager.config.get('directories', {}).get('log_dir')
+        else:
+            directories = getattr(manager.config, 'directories', {})
+            if hasattr(directories, 'get'):
+                log_dir_path = directories.get('log_dir')
+            else:
+                log_dir_path = getattr(directories, 'log_dir', None)
+        
+        if not log_dir_path:
+            print("[错误] 无法获取日志目录配置")
+            return
+            
+        log_dir = Path(log_dir_path)
         if not log_dir.exists():
-            print("📝 日志目录不存在")
+            print("[信息] 日志目录不存在")
             return
             
         # 查找最新的日志文件
         log_files = list(log_dir.glob("iptv_manager_*.log"))
         if not log_files:
-            print("📝 未找到日志文件")
+            print("[信息] 未找到日志文件")
             return
             
         latest_log = max(log_files, key=lambda x: x.stat().st_mtime)
-        print(f"📝 最新日志文件: {latest_log.name}")
-        print("📄 最近 20 行日志:")
+        print(f"[文件] 最新日志文件: {latest_log.name}")
+        print("[内容] 最近 20 行日志:")
         print("-" * 50)
         
         with open(latest_log, 'r', encoding='utf-8') as f:
@@ -809,50 +899,181 @@ def show_recent_logs(manager):
                 print(line.rstrip())
                 
     except Exception as e:
-        print(f"❌ 读取日志失败: {e}")
+        print(f"[错误] 读取日志失败: {e}")
 
 
 def cleanup_files(manager):
     """清理文件"""
     try:
-        print("🧹 开始清理过期文件...")
+        print("[清理] 开始清理过期文件...")
+        
+        # 获取配置
+        if hasattr(manager.config, 'get'):
+            backup_dir_path = manager.config.get('directories', {}).get('backup_dir')
+            log_dir_path = manager.config.get('directories', {}).get('log_dir')
+            maintenance = manager.config.get('maintenance', {})
+        else:
+            directories = getattr(manager.config, 'directories', {})
+            if hasattr(directories, 'get'):
+                backup_dir_path = directories.get('backup_dir')
+                log_dir_path = directories.get('log_dir')
+            else:
+                backup_dir_path = getattr(directories, 'backup_dir', None)
+                log_dir_path = getattr(directories, 'log_dir', None)
+            maintenance = getattr(manager.config, 'maintenance', {})
         
         # 清理备份文件
-        backup_dir = Path(manager.config['directories']['backup_dir'])
-        if backup_dir.exists():
-            retention_days = manager.config.get('maintenance', {}).get('backup_retention_days', 7)
-            cutoff_date = datetime.now() - timedelta(days=retention_days)
-            
-            backup_files = list(backup_dir.glob("*.m3u"))
-            cleaned_count = 0
-            
-            for file_path in backup_files:
-                if datetime.fromtimestamp(file_path.stat().st_mtime) < cutoff_date:
-                    file_path.unlink()
-                    cleaned_count += 1
+        if backup_dir_path:
+            backup_dir = Path(backup_dir_path)
+            if backup_dir.exists():
+                if hasattr(maintenance, 'get'):
+                    retention_days = maintenance.get('backup_retention_days', 7)
+                else:
+                    retention_days = getattr(maintenance, 'backup_retention_days', 7)
                     
-            print(f"🗑️  清理了 {cleaned_count} 个过期备份文件")
+                cutoff_date = datetime.now() - timedelta(days=retention_days)
+                
+                backup_files = list(backup_dir.glob("*.m3u"))
+                cleaned_count = 0
+                
+                for file_path in backup_files:
+                    if datetime.fromtimestamp(file_path.stat().st_mtime) < cutoff_date:
+                        file_path.unlink()
+                        cleaned_count += 1
+                        
+                print(f"[清理] 清理了 {cleaned_count} 个过期备份文件")
         
         # 清理日志文件
-        log_dir = Path(manager.config['directories']['log_dir'])
-        if log_dir.exists():
-            log_retention_days = manager.config.get('maintenance', {}).get('log_retention_days', 30)
-            cutoff_date = datetime.now() - timedelta(days=log_retention_days)
-            
-            log_files = list(log_dir.glob("*.log"))
-            cleaned_count = 0
-            
-            for file_path in log_files:
-                if datetime.fromtimestamp(file_path.stat().st_mtime) < cutoff_date:
-                    file_path.unlink()
-                    cleaned_count += 1
+        if log_dir_path:
+            log_dir = Path(log_dir_path)
+            if log_dir.exists():
+                if hasattr(maintenance, 'get'):
+                    log_retention_days = maintenance.get('log_retention_days', 30)
+                else:
+                    log_retention_days = getattr(maintenance, 'log_retention_days', 30)
                     
-            print(f"🗑️  清理了 {cleaned_count} 个过期日志文件")
-            
-        print("✅ 清理完成！")
+                cutoff_date = datetime.now() - timedelta(days=log_retention_days)
+                
+                log_files = list(log_dir.glob("*.log"))
+                cleaned_count = 0
+                
+                for file_path in log_files:
+                    if datetime.fromtimestamp(file_path.stat().st_mtime) < cutoff_date:
+                        file_path.unlink()
+                        cleaned_count += 1
+                        
+                print(f"[清理] 清理了 {cleaned_count} 个过期日志文件")
+                
+        print("[完成] 清理完成！")
         
     except Exception as e:
-        print(f"❌ 清理失败: {e}")
+        print(f"[错误] 清理失败: {e}")
+
+
+def uninstall_program(manager):
+    """卸载程序"""
+    try:
+        print("[警告] 此操作将完全删除 IPTV 管理系统及其所有数据！")
+        print("[警告] 包括：程序文件、配置文件、直播源文件、备份文件、日志文件")
+        print()
+        
+        confirm1 = input("确认要卸载吗？输入 'yes' 继续，其他任意键取消: ").strip()
+        if confirm1.lower() != 'yes':
+            return False
+            
+        print()
+        confirm2 = input("最后确认：输入 'DELETE' 开始卸载: ").strip()
+        if confirm2 != 'DELETE':
+            return False
+            
+        print()
+        print("[卸载] 开始卸载程序...")
+        
+        # 获取目录配置
+        if hasattr(manager.config, 'get'):
+            directories = manager.config.get('directories', {})
+            base_dir = directories.get('base_dir', '/opt/IPTV-Manager')
+            data_dir = directories.get('data_dir', f'{base_dir}/data')
+        else:
+            directories = getattr(manager.config, 'directories', {})
+            if hasattr(directories, 'get'):
+                base_dir = directories.get('base_dir', '/opt/IPTV-Manager')
+                data_dir = directories.get('data_dir', f'{base_dir}/data')
+            else:
+                base_dir = getattr(directories, 'base_dir', '/opt/IPTV-Manager')
+                data_dir = getattr(directories, 'data_dir', f'{base_dir}/data')
+        
+        # 删除cron任务
+        print("[卸载] 删除定时任务...")
+        import subprocess
+        try:
+            # 获取当前crontab
+            result = subprocess.run(['crontab', '-l'], capture_output=True, text=True)
+            if result.returncode == 0:
+                lines = result.stdout.strip().split('\n')
+                # 过滤掉包含iptv_manager.py的行
+                filtered_lines = [line for line in lines if 'iptv_manager.py' not in line and 'iptv' not in line]
+                
+                if len(filtered_lines) != len(lines):
+                    # 有变化，更新crontab
+                    if filtered_lines and filtered_lines != ['']:
+                        subprocess.run(['crontab', '-'], input='\n'.join(filtered_lines), text=True)
+                    else:
+                        subprocess.run(['crontab', '-r'], capture_output=True)
+                    print("[卸载] 定时任务已删除")
+                else:
+                    print("[卸载] 未找到相关定时任务")
+        except Exception as e:
+            print(f"[警告] 删除定时任务失败: {e}")
+        
+        # 删除软连接
+        print("[卸载] 删除软连接...")
+        symlink_path = "/usr/local/bin/iptv"
+        if Path(symlink_path).exists():
+            try:
+                subprocess.run(['sudo', 'rm', '-f', symlink_path], check=True)
+                print("[卸载] 软连接已删除")
+            except Exception as e:
+                print(f"[警告] 删除软连接失败: {e}")
+        
+        # 删除程序目录
+        print(f"[卸载] 删除程序目录: {base_dir}")
+        base_path = Path(base_dir)
+        if base_path.exists():
+            try:
+                if str(base_path).startswith('/opt/'):
+                    subprocess.run(['sudo', 'rm', '-rf', str(base_path)], check=True)
+                else:
+                    import shutil
+                    shutil.rmtree(base_path)
+                print("[卸载] 程序目录已删除")
+            except Exception as e:
+                print(f"[错误] 删除程序目录失败: {e}")
+                return False
+        
+        # 删除数据目录（如果与程序目录不同）
+        if data_dir != f'{base_dir}/data':
+            print(f"[卸载] 删除数据目录: {data_dir}")
+            data_path = Path(data_dir)
+            if data_path.exists():
+                try:
+                    if str(data_path).startswith('/opt/') or str(data_path).startswith('/media/'):
+                        subprocess.run(['sudo', 'rm', '-rf', str(data_path)], check=True)
+                    else:
+                        import shutil
+                        shutil.rmtree(data_path)
+                    print("[卸载] 数据目录已删除")
+                except Exception as e:
+                    print(f"[错误] 删除数据目录失败: {e}")
+        
+        print()
+        print("[完成] IPTV 管理系统已完全卸载")
+        print("[信息] 感谢您的使用！")
+        return True
+        
+    except Exception as e:
+        print(f"[错误] 卸载失败: {e}")
+        return False
 
 
 def main():
