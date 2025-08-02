@@ -63,11 +63,15 @@ get_user_preferences() {
         exec < /dev/tty 2>/dev/null || true
         
         echo
-        echo "请选择安装路径:"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "📁 安装路径选择"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "1) 使用默认路径: $DEFAULT_INSTALL_DIR"
         echo "2) 自定义路径"
         echo
-        read -p "请输入选择 (1-2) [默认: 1]: " path_choice
+        echo "提示: 默认路径符合Linux标准，推荐使用"
+        echo
+        read -p "请输入你的选择 (1-2) [默认: 1]，然后按回车: " path_choice
         
         case ${path_choice:-1} in
             1)
@@ -75,7 +79,9 @@ get_user_preferences() {
                 log_info "✓ 已选择默认安装路径: $INSTALL_DIR"
                 ;;
             2)
-                read -p "请输入自定义安装路径: " custom_path
+                echo
+                echo "请输入自定义安装路径 (例如: /home/user/iptv-manager):"
+                read -p "路径: " custom_path
                 if [[ -z "$custom_path" ]]; then
                     log_warn "路径不能为空，使用默认路径"
                     INSTALL_DIR="$DEFAULT_INSTALL_DIR"
@@ -83,6 +89,8 @@ get_user_preferences() {
                     INSTALL_DIR="$custom_path"
                     log_info "✓ 已设置自定义安装路径: $INSTALL_DIR"
                 fi
+                echo "按回车继续..."
+                read
                 ;;
             *)
                 log_warn "无效选择，使用默认路径"
@@ -92,11 +100,16 @@ get_user_preferences() {
         
         # 询问直播源文件保存目录
         echo
-        echo "请选择直播源文件保存目录:"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "💾 数据目录选择"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "1) 使用默认目录: $INSTALL_DIR/data"
         echo "2) 自定义目录 (推荐用于大容量存储)"
         echo
-        read -p "请输入选择 (1-2) [默认: 1]: " data_choice
+        echo "提示: 如果有大容量磁盘，建议选择自定义目录"
+        echo "      例如: /media/storage/iptv 或 /data/iptv"
+        echo
+        read -p "请输入你的选择 (1-2) [默认: 1]，然后按回车: " data_choice
         
         case ${data_choice:-1} in
             1)
@@ -104,8 +117,14 @@ get_user_preferences() {
                 log_info "✓ 已选择默认数据目录: $DATA_DIR"
                 ;;
             2)
-                echo "提示: 建议选择大容量磁盘目录，如 /media/storage/iptv 或 /home/user/iptv-data"
-                read -p "请输入自定义直播源保存目录: " custom_data_dir
+                echo
+                echo "请输入自定义直播源保存目录:"
+                echo "建议路径示例:"
+                echo "  /media/storage/iptv    (外部存储)"
+                echo "  /data/iptv            (数据分区)"
+                echo "  /home/user/iptv-data  (用户目录)"
+                echo
+                read -p "目录路径: " custom_data_dir
                 if [[ -z "$custom_data_dir" ]]; then
                     log_warn "目录不能为空，使用默认目录"
                     DATA_DIR="$INSTALL_DIR/data"
@@ -113,6 +132,8 @@ get_user_preferences() {
                     DATA_DIR="$custom_data_dir"
                     log_info "✓ 已设置自定义数据目录: $DATA_DIR"
                 fi
+                echo "按回车继续..."
+                read
                 ;;
             *)
                 log_warn "无效选择，使用默认目录"
@@ -122,10 +143,15 @@ get_user_preferences() {
         
         # 询问是否立即运行
         echo
-        echo "安装完成后的操作选项:"
-        echo "Y) 立即下载直播源 (推荐)"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🚀 安装后操作"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Y) 立即下载直播源 (推荐，验证安装是否成功)"
         echo "n) 仅完成安装，稍后手动运行"
-        read -p "请选择 (Y/n) [默认: Y]: " run_immediately
+        echo
+        echo "提示: 选择Y可以立即测试程序是否正常工作"
+        echo
+        read -p "请输入你的选择 (Y/n) [默认: Y]，然后按回车: " run_immediately
         RUN_IMMEDIATELY=${run_immediately:-Y}
         
         if [[ "$RUN_IMMEDIATELY" =~ ^[Yy]$ ]]; then
@@ -133,6 +159,8 @@ get_user_preferences() {
         else
             log_info "✓ 仅完成安装，稍后可使用 'iptv' 命令手动运行"
         fi
+        echo "按回车继续..."
+        read
     else
         # 非交互模式，使用默认值或环境变量
         log_info "非交互模式检测到，使用默认配置"
