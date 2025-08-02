@@ -64,14 +64,16 @@ get_user_preferences() {
         
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "📁 安装路径选择"
+        echo "安装路径选择"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "请选择安装路径:"
         echo "1) 使用默认路径: $DEFAULT_INSTALL_DIR"
         echo "2) 自定义路径"
         echo
         echo "提示: 默认路径符合Linux标准，推荐使用"
         echo
-        read -p "请输入你的选择 (1-2) [默认: 1]，然后按回车: " path_choice
+        echo -n "输入选项回车默认: 1 > "
+        read path_choice
         
         case ${path_choice:-1} in
             1)
@@ -81,7 +83,8 @@ get_user_preferences() {
             2)
                 echo
                 echo "请输入自定义安装路径 (例如: /home/user/iptv-manager):"
-                read -p "路径: " custom_path
+                echo -n "输入自定义路径 > "
+                read custom_path
                 if [[ -z "$custom_path" ]]; then
                     log_warn "路径不能为空，使用默认路径"
                     INSTALL_DIR="$DEFAULT_INSTALL_DIR"
@@ -89,8 +92,6 @@ get_user_preferences() {
                     INSTALL_DIR="$custom_path"
                     log_info "✓ 已设置自定义安装路径: $INSTALL_DIR"
                 fi
-                echo "按回车继续..."
-                read
                 ;;
             *)
                 log_warn "无效选择，使用默认路径"
@@ -101,15 +102,17 @@ get_user_preferences() {
         # 询问直播源文件保存目录
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "💾 数据目录选择"
+        echo "数据目录选择"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "请选择直播源文件保存目录:"
         echo "1) 使用默认目录: $INSTALL_DIR/data"
         echo "2) 自定义目录 (推荐用于大容量存储)"
         echo
         echo "提示: 如果有大容量磁盘，建议选择自定义目录"
         echo "      例如: /media/storage/iptv 或 /data/iptv"
         echo
-        read -p "请输入你的选择 (1-2) [默认: 1]，然后按回车: " data_choice
+        echo -n "输入选项回车默认: 1 > "
+        read data_choice
         
         case ${data_choice:-1} in
             1)
@@ -124,7 +127,8 @@ get_user_preferences() {
                 echo "  /data/iptv            (数据分区)"
                 echo "  /home/user/iptv-data  (用户目录)"
                 echo
-                read -p "目录路径: " custom_data_dir
+                echo -n "输入自定义路径 > "
+                read custom_data_dir
                 if [[ -z "$custom_data_dir" ]]; then
                     log_warn "目录不能为空，使用默认目录"
                     DATA_DIR="$INSTALL_DIR/data"
@@ -132,8 +136,6 @@ get_user_preferences() {
                     DATA_DIR="$custom_data_dir"
                     log_info "✓ 已设置自定义数据目录: $DATA_DIR"
                 fi
-                echo "按回车继续..."
-                read
                 ;;
             *)
                 log_warn "无效选择，使用默认目录"
@@ -144,14 +146,16 @@ get_user_preferences() {
         # 询问是否立即运行
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "🚀 安装后操作"
+        echo "安装后操作"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "安装完成后立即运行(Y/n):"
         echo "Y) 立即下载直播源 (推荐，验证安装是否成功)"
         echo "n) 仅完成安装，稍后手动运行"
         echo
         echo "提示: 选择Y可以立即测试程序是否正常工作"
         echo
-        read -p "请输入你的选择 (Y/n) [默认: Y]，然后按回车: " run_immediately
+        echo -n "输入选项回车默认: Y > "
+        read run_immediately
         RUN_IMMEDIATELY=${run_immediately:-Y}
         
         if [[ "$RUN_IMMEDIATELY" =~ ^[Yy]$ ]]; then
@@ -159,8 +163,6 @@ get_user_preferences() {
         else
             log_info "✓ 仅完成安装，稍后可使用 'iptv' 命令手动运行"
         fi
-        echo "按回车继续..."
-        read
     else
         # 非交互模式，使用默认值或环境变量
         log_info "非交互模式检测到，使用默认配置"
@@ -181,11 +183,8 @@ get_user_preferences() {
     # 检查是否可以交互
     if [[ "${SKIP_INTERACTIVE:-}" != "true" ]]; then
         echo
-        echo "选择操作:"
-        echo "Y) 确认配置，开始安装"
-        echo "n) 取消安装"
-        echo
-        read -p "请输入你的选择 (Y/n) [默认: Y]，然后按回车: " confirm_install
+        echo -n "确认以上配置并开始安装? (Y/n): "
+        read confirm_install
         confirm_install=${confirm_install:-Y}
         
         if [[ ! "$confirm_install" =~ ^[Yy]$ ]]; then
@@ -194,8 +193,6 @@ get_user_preferences() {
             exit 0
         fi
         echo "✓ 配置确认，开始安装"
-        echo "按回车继续..."
-        read
     fi
     
     echo
@@ -204,31 +201,26 @@ get_user_preferences() {
 # 检查是否为root用户
 check_root() {
     if [[ $EUID -eq 0 ]]; then
-        echo "  ⚠️  检测到root用户"
-        echo "     建议: 使用普通用户运行此脚本以提高安全性"
-        echo "     影响: root用户安装可能导致权限问题"
+        log_warn "检测到root用户，建议使用普通用户运行此脚本"
+        echo "建议: 使用普通用户运行此脚本以提高安全性"
+        echo "影响: root用户安装可能导致权限问题"
         
         # 检查是否通过管道执行
         if [[ "${SKIP_INTERACTIVE:-}" != "true" ]] && [[ -t 0 ]]; then
             echo
-            echo "选择操作:"
-            echo "y) 继续使用root用户安装"
-            echo "N) 退出，切换到普通用户后重新运行"
+            echo -n "是否继续? (y/N): "
+            read root_continue
             echo
-            read -p "请输入你的选择 (y/N) [默认: N]，然后按回车: " -r
-            echo
-            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            if [[ ! $root_continue =~ ^[Yy]$ ]]; then
                 echo "安装已取消。请使用普通用户重新运行："
                 echo "  su - username"
                 echo "  ./install.sh"
                 exit 1
             fi
             echo "✓ 继续使用root用户安装"
-            echo "按回车继续..."
-            read
         else
             # 通过管道执行或非交互模式，自动继续但给出警告
-            echo "     模式: 非交互模式，自动继续安装（3秒后开始）"
+            echo "模式: 非交互模式，自动继续安装（3秒后开始）"
             sleep 3
         fi
     fi
@@ -452,15 +444,16 @@ create_symlink() {
         
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "🔗 全局命令软连接"
+        echo "全局命令软连接"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "创建软连接后可以在任何位置使用 'iptv' 命令"
+        echo "创建后可以在任何位置使用 'iptv' 命令"
         echo "软连接位置: $symlink_path"
         echo "目标程序: $target_script"
         echo
         echo "提示: 推荐创建，使用更方便"
         echo
-        read -p "请输入你的选择 (Y/n) [默认: Y]，然后按回车: " create_link
+        echo -n "是否创建全局命令软连接?(Y/n): "
+        read create_link
         create_link=${create_link:-Y}
         
         if [[ "$create_link" =~ ^[Yy]$ ]]; then
@@ -468,8 +461,6 @@ create_symlink() {
         else
             echo "✓ 跳过软连接创建"
         fi
-        echo "按回车继续..."
-        read
     else
         # 非交互模式，使用环境变量或默认值
         create_link="${CREATE_SYMLINK:-Y}"
@@ -591,18 +582,18 @@ setup_cron() {
         
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "⏰ 定时任务设置"
+        echo "定时任务设置"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "定时任务将自动下载和更新直播源"
-        echo
-        echo "1) 每6小时执行一次 (推荐，平衡更新频率和系统负载)"
-        echo "2) 每天凌晨2点执行 (适合低峰期更新)"
-        echo "3) 每小时执行一次 (频繁更新，适合对实时性要求高的场景)"
-        echo "4) 跳过定时任务设置 (稍后手动配置)"
+        echo "请选择定时任务频率:"
+        echo "1) 每6小时执行一次 (推荐)"
+        echo "2) 每天凌晨2点执行"
+        echo "3) 每小时执行一次"
+        echo "4) 跳过定时任务设置"
         echo
         echo "提示: 推荐选择选项1，既能保持更新又不会过于频繁"
         echo
-        read -p "请输入你的选择 (1-4) [默认: 1]，然后按回车: " choice
+        echo -n "输入选择回车默认: 1 > "
+        read choice
         choice=${choice:-1}
         
         case $choice in
@@ -612,8 +603,6 @@ setup_cron() {
             4) echo "✓ 已选择：跳过定时任务设置" ;;
             *) echo "✓ 无效选择，使用默认：每6小时执行一次"; choice=1 ;;
         esac
-        echo "按回车继续..."
-        read
     else
         # 非交互模式，使用默认值
         echo "     模式: 非交互模式，使用默认定时任务设置（每6小时执行一次）"
