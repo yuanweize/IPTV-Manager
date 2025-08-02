@@ -623,6 +623,238 @@ class IPTVManager:
             logging.error(f"显示状态失败: {e}")
 
 
+def show_menu():
+    """显示交互式菜单"""
+    print("\n" + "="*60)
+    print("🎬 IPTV直播源管理系统")
+    print("="*60)
+    print("请选择要执行的操作:")
+    print()
+    print("1. 📥 下载/更新直播源")
+    print("2. 📊 查看系统状态")
+    print("3. 📋 查看直播源列表")
+    print("4. 🔧 配置管理")
+    print("5. 📝 查看日志")
+    print("6. 🧹 清理维护")
+    print("0. 🚪 退出程序")
+    print()
+    print("="*60)
+
+
+def interactive_mode(manager):
+    """交互式模式"""
+    while True:
+        try:
+            show_menu()
+            choice = input("请输入选项 (0-6): ").strip()
+            
+            if choice == '0':
+                print("\n👋 感谢使用 IPTV 管理系统，再见！")
+                return 0
+                
+            elif choice == '1':
+                print("\n🚀 开始下载/更新直播源...")
+                print("-" * 50)
+                result = manager.run()
+                if result == 0:
+                    print("\n✅ 直播源更新完成！")
+                else:
+                    print("\n❌ 直播源更新遇到问题，请查看日志")
+                input("\n按回车键继续...")
+                
+            elif choice == '2':
+                print("\n📊 系统状态信息")
+                print("-" * 50)
+                manager.show_status()
+                input("\n按回车键继续...")
+                
+            elif choice == '3':
+                print("\n📋 直播源文件列表")
+                print("-" * 50)
+                show_source_files(manager)
+                input("\n按回车键继续...")
+                
+            elif choice == '4':
+                print("\n🔧 配置管理")
+                print("-" * 50)
+                show_config_info(manager)
+                input("\n按回车键继续...")
+                
+            elif choice == '5':
+                print("\n📝 查看最新日志")
+                print("-" * 50)
+                show_recent_logs(manager)
+                input("\n按回车键继续...")
+                
+            elif choice == '6':
+                print("\n🧹 清理维护")
+                print("-" * 50)
+                cleanup_files(manager)
+                input("\n按回车键继续...")
+                
+            else:
+                print("\n❌ 无效选项，请输入 0-6 之间的数字")
+                input("按回车键继续...")
+                
+        except KeyboardInterrupt:
+            print("\n\n👋 用户中断，退出程序")
+            return 130
+        except Exception as e:
+            print(f"\n❌ 操作失败: {e}")
+            input("按回车键继续...")
+
+
+def show_source_files(manager):
+    """显示直播源文件信息"""
+    try:
+        data_dir = Path(manager.config['directories']['data_dir'])
+        if not data_dir.exists():
+            print("📁 数据目录不存在，请先下载直播源")
+            return
+            
+        m3u_files = list(data_dir.glob("*.m3u"))
+        if not m3u_files:
+            print("📁 未找到直播源文件，请先下载直播源")
+            return
+            
+        print(f"📁 数据目录: {data_dir}")
+        print(f"📊 共找到 {len(m3u_files)} 个直播源文件:")
+        print()
+        
+        for i, file_path in enumerate(m3u_files, 1):
+            stat = file_path.stat()
+            size = stat.st_size
+            mtime = datetime.fromtimestamp(stat.st_mtime)
+            
+            # 格式化文件大小
+            if size < 1024:
+                size_str = f"{size} B"
+            elif size < 1024 * 1024:
+                size_str = f"{size / 1024:.1f} KB"
+            else:
+                size_str = f"{size / (1024 * 1024):.1f} MB"
+                
+            print(f"{i:2d}. 📺 {file_path.name}")
+            print(f"     📏 大小: {size_str}")
+            print(f"     🕒 更新时间: {mtime.strftime('%Y-%m-%d %H:%M:%S')}")
+            print()
+            
+    except Exception as e:
+        print(f"❌ 获取文件信息失败: {e}")
+
+
+def show_config_info(manager):
+    """显示配置信息"""
+    try:
+        config = manager.config
+        print("⚙️  当前配置信息:")
+        print()
+        
+        # 目录配置
+        print("📁 目录配置:")
+        dirs = config.get('directories', {})
+        for key, value in dirs.items():
+            print(f"   {key}: {value}")
+        print()
+        
+        # 直播源配置
+        print("📺 直播源配置:")
+        sources = config.get('sources', {})
+        enabled_count = sum(1 for s in sources.values() if s.get('enabled', True))
+        print(f"   总数: {len(sources)} 个")
+        print(f"   启用: {enabled_count} 个")
+        print()
+        
+        for name, source in sources.items():
+            status = "✅ 启用" if source.get('enabled', True) else "❌ 禁用"
+            print(f"   • {source.get('name', name)} ({status})")
+            print(f"     URL: {source.get('url', 'N/A')}")
+            print(f"     文件: {source.get('filename', 'N/A')}")
+            print()
+            
+        # 下载配置
+        print("⚡ 下载配置:")
+        download = config.get('download', {})
+        print(f"   超时时间: {download.get('timeout', 30)} 秒")
+        print(f"   重试次数: {download.get('retry_count', 3)} 次")
+        print(f"   并发数: {download.get('max_workers', 4)} 个")
+        print()
+        
+    except Exception as e:
+        print(f"❌ 获取配置信息失败: {e}")
+
+
+def show_recent_logs(manager):
+    """显示最近的日志"""
+    try:
+        log_dir = Path(manager.config['directories']['log_dir'])
+        if not log_dir.exists():
+            print("📝 日志目录不存在")
+            return
+            
+        # 查找最新的日志文件
+        log_files = list(log_dir.glob("iptv_manager_*.log"))
+        if not log_files:
+            print("📝 未找到日志文件")
+            return
+            
+        latest_log = max(log_files, key=lambda x: x.stat().st_mtime)
+        print(f"📝 最新日志文件: {latest_log.name}")
+        print("📄 最近 20 行日志:")
+        print("-" * 50)
+        
+        with open(latest_log, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            for line in lines[-20:]:
+                print(line.rstrip())
+                
+    except Exception as e:
+        print(f"❌ 读取日志失败: {e}")
+
+
+def cleanup_files(manager):
+    """清理文件"""
+    try:
+        print("🧹 开始清理过期文件...")
+        
+        # 清理备份文件
+        backup_dir = Path(manager.config['directories']['backup_dir'])
+        if backup_dir.exists():
+            retention_days = manager.config.get('maintenance', {}).get('backup_retention_days', 7)
+            cutoff_date = datetime.now() - timedelta(days=retention_days)
+            
+            backup_files = list(backup_dir.glob("*.m3u"))
+            cleaned_count = 0
+            
+            for file_path in backup_files:
+                if datetime.fromtimestamp(file_path.stat().st_mtime) < cutoff_date:
+                    file_path.unlink()
+                    cleaned_count += 1
+                    
+            print(f"🗑️  清理了 {cleaned_count} 个过期备份文件")
+        
+        # 清理日志文件
+        log_dir = Path(manager.config['directories']['log_dir'])
+        if log_dir.exists():
+            log_retention_days = manager.config.get('maintenance', {}).get('log_retention_days', 30)
+            cutoff_date = datetime.now() - timedelta(days=log_retention_days)
+            
+            log_files = list(log_dir.glob("*.log"))
+            cleaned_count = 0
+            
+            for file_path in log_files:
+                if datetime.fromtimestamp(file_path.stat().st_mtime) < cutoff_date:
+                    file_path.unlink()
+                    cleaned_count += 1
+                    
+            print(f"🗑️  清理了 {cleaned_count} 个过期日志文件")
+            
+        print("✅ 清理完成！")
+        
+    except Exception as e:
+        print(f"❌ 清理失败: {e}")
+
+
 def main():
     """主函数"""
     import argparse
@@ -630,6 +862,7 @@ def main():
     parser = argparse.ArgumentParser(description='IPTV直播源管理脚本')
     parser.add_argument('--config', '-c', default='config.json', help='配置文件路径')
     parser.add_argument('--status', '-s', action='store_true', help='显示当前状态')
+    parser.add_argument('--download', '-d', action='store_true', help='直接下载模式（跳过菜单）')
     parser.add_argument('--version', '-v', action='version', version='IPTV Manager 1.0.0')
     
     args = parser.parse_args()
@@ -640,8 +873,17 @@ def main():
         if args.status:
             manager.show_status()
             return 0
-        else:
+        elif args.download:
+            # 直接下载模式，用于cron任务
             return manager.run()
+        else:
+            # 检查是否在终端中运行
+            if sys.stdin.isatty() and sys.stdout.isatty():
+                # 交互模式
+                return interactive_mode(manager)
+            else:
+                # 非交互模式（如cron），直接下载
+                return manager.run()
             
     except KeyboardInterrupt:
         print("\n用户中断执行")

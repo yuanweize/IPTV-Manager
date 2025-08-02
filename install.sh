@@ -33,6 +33,26 @@ log_step() {
     echo -e "${BLUE}[STEP]${NC} $1"
 }
 
+# 进度显示函数
+show_progress_bar() {
+    local current=$1
+    local total=$2
+    local description=$3
+    local width=40
+    local percentage=$((current * 100 / total))
+    local filled=$((current * width / total))
+    local empty=$((width - filled))
+    
+    printf "\r%s [" "$description"
+    printf "%*s" $filled | tr ' ' '█'
+    printf "%*s" $empty | tr ' ' '░'
+    printf "] %d%% (%d/%d)" $percentage $current $total
+    
+    if [ $current -eq $total ]; then
+        echo
+    fi
+}
+
 # 用户交互函数
 get_user_preferences() {
     log_step "配置安装选项..."
@@ -52,6 +72,7 @@ get_user_preferences() {
         case ${path_choice:-1} in
             1)
                 INSTALL_DIR="$DEFAULT_INSTALL_DIR"
+                log_info "✓ 已选择默认安装路径: $INSTALL_DIR"
                 ;;
             2)
                 read -p "请输入自定义安装路径: " custom_path
@@ -60,6 +81,7 @@ get_user_preferences() {
                     INSTALL_DIR="$DEFAULT_INSTALL_DIR"
                 else
                     INSTALL_DIR="$custom_path"
+                    log_info "✓ 已设置自定义安装路径: $INSTALL_DIR"
                 fi
                 ;;
             *)
@@ -72,21 +94,24 @@ get_user_preferences() {
         echo
         echo "请选择直播源文件保存目录:"
         echo "1) 使用默认目录: $INSTALL_DIR/data"
-        echo "2) 自定义目录"
+        echo "2) 自定义目录 (推荐用于大容量存储)"
         echo
         read -p "请输入选择 (1-2) [默认: 1]: " data_choice
         
         case ${data_choice:-1} in
             1)
                 DATA_DIR="$INSTALL_DIR/data"
+                log_info "✓ 已选择默认数据目录: $DATA_DIR"
                 ;;
             2)
+                echo "提示: 建议选择大容量磁盘目录，如 /media/storage/iptv 或 /home/user/iptv-data"
                 read -p "请输入自定义直播源保存目录: " custom_data_dir
                 if [[ -z "$custom_data_dir" ]]; then
                     log_warn "目录不能为空，使用默认目录"
                     DATA_DIR="$INSTALL_DIR/data"
                 else
                     DATA_DIR="$custom_data_dir"
+                    log_info "✓ 已设置自定义数据目录: $DATA_DIR"
                 fi
                 ;;
             *)
@@ -97,8 +122,17 @@ get_user_preferences() {
         
         # 询问是否立即运行
         echo
-        read -p "安装完成后是否立即下载直播源? (Y/n): " run_immediately
+        echo "安装完成后的操作选项:"
+        echo "Y) 立即下载直播源 (推荐)"
+        echo "n) 仅完成安装，稍后手动运行"
+        read -p "请选择 (Y/n) [默认: Y]: " run_immediately
         RUN_IMMEDIATELY=${run_immediately:-Y}
+        
+        if [[ "$RUN_IMMEDIATELY" =~ ^[Yy]$ ]]; then
+            log_info "✓ 将在安装完成后立即下载直播源"
+        else
+            log_info "✓ 仅完成安装，稍后可使用 'iptv' 命令手动运行"
+        fi
     else
         # 非交互模式，使用默认值或环境变量
         log_info "非交互模式检测到，使用默认配置"
@@ -107,9 +141,27 @@ get_user_preferences() {
         RUN_IMMEDIATELY="${AUTO_RUN:-Y}"
     fi
     
-    log_info "安装路径: $INSTALL_DIR"
-    log_info "数据目录: $DATA_DIR"
-    log_info "安装后立即运行: $RUN_IMMEDIATELY"
+    # 显示配置确认
+    echo
+    echo -e "${BLUE}📋 安装配置确认${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo -e "${GREEN}✓${NC} 安装路径: $INSTALL_DIR"
+    echo -e "${GREEN}✓${NC} 数据目录: $DATA_DIR"
+    echo -e "${GREEN}✓${NC} 安装后立即运行: $RUN_IMMEDIATELY"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    # 检查是否可以交互
+    if [[ "${SKIP_INTERACTIVE:-}" != "true" ]]; then
+        echo
+        read -p "确认以上配置并开始安装? (Y/n): " confirm_install
+        confirm_install=${confirm_install:-Y}
+        
+        if [[ ! "$confirm_install" =~ ^[Yy]$ ]]; then
+            log_info "用户取消安装"
+            exit 0
+        fi
+    fi
+    
     echo
 }
 
@@ -148,27 +200,24 @@ check_system() {
 
 # 安装系统依赖
 install_system_deps() {
-    log_step "安装系统依赖..."
-    
-    # 更新包列表
-    sudo apt update
+    echo "  📦 更新软件包列表..."
+    sudo apt update > /dev/null 2>&1
     
     # 安装Python3和相关包
     if ! command -v python3 &> /dev/null; then
-        log_info "安装Python3..."
-        sudo apt install -y python3
+        echo "  🐍 安装Python3..."
+        sudo apt install -y python3 > /dev/null 2>&1
     else
-        log_info "Python3已安装: $(python3 --version)"
+        echo "  ✓ Python3已安装: $(python3 --version)"
     fi
     
     # 安装Python开发包和pip相关组件
-    log_info "安装Python开发包..."
-    sudo apt install -y python3-pip python3-distutils python3-setuptools python3-dev python3-venv
+    echo "  🔧 安装Python开发包..."
+    sudo apt install -y python3-pip python3-distutils python3-setuptools python3-dev python3-venv > /dev/null 2>&1
     
     # 安装其他必要工具
-    sudo apt install -y curl wget cron
-    
-    log_info "系统依赖安装完成"
+    echo "  🛠️  安装必要工具..."
+    sudo apt install -y curl wget cron > /dev/null 2>&1
 }
 
 # 下载项目文件
@@ -181,25 +230,25 @@ download_files() {
     
     # 下载文件列表
     local files=("iptv_manager.py" "config.json" "requirements.txt")
+    local total_files=${#files[@]}
+    local current_file=0
     
     for file in "${files[@]}"; do
-        log_info "下载 $file..."
-        if curl -fsSL "${GITHUB_RAW_URL}/${file}" -o "$file"; then
-            log_info "✓ $file 下载成功"
+        current_file=$((current_file + 1))
+        echo "  📥 下载 $file ($current_file/$total_files)..."
+        
+        if curl -fsSL "${GITHUB_RAW_URL}/${file}" -o "$file" 2>/dev/null; then
+            echo "    ✓ $file 下载成功"
         else
-            log_error "✗ $file 下载失败"
+            echo "    ✗ $file 下载失败"
             rm -rf "$TEMP_DIR"
             exit 1
         fi
     done
-    
-    log_info "所有文件下载完成"
 }
 
 # 安装Python依赖
 install_python_deps() {
-    log_step "安装Python依赖..."
-    
     # 更新PATH以包含用户本地bin目录
     export PATH="$HOME/.local/bin:$PATH"
     
@@ -208,36 +257,39 @@ install_python_deps() {
     
     # 方法1: 尝试使用系统pip3
     if command -v pip3 &> /dev/null && pip3 --version &> /dev/null 2>&1; then
-        log_info "使用系统pip3安装依赖..."
+        echo "  🐍 使用系统pip3安装依赖..."
         if pip3 install requests chardet --user &> /dev/null; then
             install_success=true
+            echo "    ✓ 依赖安装成功"
         fi
     fi
     
     # 方法2: 使用python -m pip
     if [ "$install_success" = false ]; then
-        log_info "使用python -m pip安装依赖..."
+        echo "  🔄 使用python -m pip安装依赖..."
         if python3 -m pip install requests chardet --user &> /dev/null; then
             install_success=true
+            echo "    ✓ 依赖安装成功"
         fi
     fi
     
     # 方法3: 重新安装pip后再试
     if [ "$install_success" = false ]; then
-        log_warn "常规方法失败，尝试重新安装pip..."
+        echo "  🔧 重新安装pip后再试..."
         if curl -sS https://bootstrap.pypa.io/get-pip.py | python3 - --user &> /dev/null; then
             export PATH="$HOME/.local/bin:$PATH"
             if python3 -m pip install requests chardet --user &> /dev/null; then
                 install_success=true
+                echo "    ✓ 依赖安装成功"
             fi
         fi
     fi
     
     # 验证安装结果
     if python3 -c "import requests, chardet" 2>/dev/null; then
-        log_info "Python依赖安装成功"
+        echo "  ✅ Python依赖验证通过"
     else
-        log_error "Python依赖安装失败"
+        echo "  ❌ Python依赖安装失败"
         echo
         echo "请手动执行以下命令安装依赖："
         echo "  python3 -m pip install requests chardet --user"
@@ -251,14 +303,12 @@ install_python_deps() {
 
 # 创建目录结构
 create_directories() {
-    log_step "创建目录结构..."
-    
-    log_info "创建基础目录: $INSTALL_DIR"
+    echo "  📁 创建基础目录: $INSTALL_DIR"
     sudo mkdir -p "$INSTALL_DIR"
     
     # 创建数据目录（可能在不同位置）
     if [[ "$DATA_DIR" != "$INSTALL_DIR/data" ]]; then
-        log_info "创建自定义数据目录: $DATA_DIR"
+        echo "  📁 创建自定义数据目录: $DATA_DIR"
         mkdir -p "$DATA_DIR"
         # 如果数据目录需要sudo权限
         if [[ ! -w "$(dirname "$DATA_DIR")" ]]; then
@@ -266,19 +316,20 @@ create_directories() {
             sudo chown -R $USER:$USER "$DATA_DIR"
         fi
     else
+        echo "  📁 创建数据目录: $DATA_DIR"
         mkdir -p "$DATA_DIR"
     fi
     
     # 创建其他子目录
+    echo "  📁 创建备份和日志目录..."
     mkdir -p "$INSTALL_DIR"/{backup,logs}
     
     # 设置权限
+    echo "  🔐 设置目录权限..."
     sudo chown -R $USER:$USER "$INSTALL_DIR"
     chmod 755 "$INSTALL_DIR"
     chmod 755 "$INSTALL_DIR"/{backup,logs}
     chmod 755 "$DATA_DIR"
-    
-    log_info "目录结构创建完成"
 }
 
 # 安装脚本文件
@@ -367,7 +418,8 @@ EOF
             log_info "现在可以在任何位置使用 'iptv' 命令了！"
             echo
             echo "使用示例:"
-            echo "  iptv                    # 下载直播源"
+            echo "  iptv                    # 进入交互菜单"
+            echo "  iptv --download         # 直接下载直播源"
             echo "  iptv --status          # 查看状态"
             echo "  iptv --help            # 查看帮助"
         else
@@ -448,15 +500,15 @@ setup_cron() {
     
     case $choice in
         1)
-            CRON_ENTRY="0 */6 * * * cd $INSTALL_DIR && python3 iptv_manager.py >> $INSTALL_DIR/logs/cron.log 2>&1"
+            CRON_ENTRY="0 */6 * * * cd $INSTALL_DIR && python3 iptv_manager.py --download >> $INSTALL_DIR/logs/cron.log 2>&1"
             log_info "设置定时任务：每6小时执行一次"
             ;;
         2)
-            CRON_ENTRY="0 2 * * * cd $INSTALL_DIR && python3 iptv_manager.py >> $INSTALL_DIR/logs/cron.log 2>&1"
+            CRON_ENTRY="0 2 * * * cd $INSTALL_DIR && python3 iptv_manager.py --download >> $INSTALL_DIR/logs/cron.log 2>&1"
             log_info "设置定时任务：每天凌晨2点执行"
             ;;
         3)
-            CRON_ENTRY="0 * * * * cd $INSTALL_DIR && python3 iptv_manager.py >> $INSTALL_DIR/logs/cron.log 2>&1"
+            CRON_ENTRY="0 * * * * cd $INSTALL_DIR && python3 iptv_manager.py --download >> $INSTALL_DIR/logs/cron.log 2>&1"
             log_info "设置定时任务：每小时执行一次"
             ;;
         4)
@@ -465,7 +517,7 @@ setup_cron() {
             ;;
         *)
             log_warn "无效选择，使用默认设置（每6小时执行一次）"
-            CRON_ENTRY="0 */6 * * * cd $INSTALL_DIR && python3 iptv_manager.py >> $INSTALL_DIR/logs/cron.log 2>&1"
+            CRON_ENTRY="0 */6 * * * cd $INSTALL_DIR && python3 iptv_manager.py --download >> $INSTALL_DIR/logs/cron.log 2>&1"
             ;;
     esac
     
@@ -478,12 +530,86 @@ setup_cron() {
 run_script() {
     if [[ "$RUN_IMMEDIATELY" =~ ^[Yy]$ ]]; then
         log_step "立即下载直播源..."
+        echo "正在初始化下载任务，请稍候..."
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        
         cd "$INSTALL_DIR"
-        if python3 iptv_manager.py; then
-            log_info "直播源下载完成!"
+        
+        # 显示进度的函数
+        show_progress() {
+            local duration=$1
+            local step=0
+            local total=50
+            
+            while [ $step -le $total ]; do
+                local progress=$((step * 100 / total))
+                local filled=$((step * 40 / total))
+                local empty=$((40 - filled))
+                
+                printf "\r下载进度: ["
+                printf "%*s" $filled | tr ' ' '█'
+                printf "%*s" $empty | tr ' ' '░'
+                printf "] %d%%" $progress
+                
+                sleep 0.1
+                step=$((step + 1))
+            done
+            echo
+        }
+        
+        # 在后台运行下载任务
+        python3 iptv_manager.py > /tmp/iptv_install_output.log 2>&1 &
+        local download_pid=$!
+        
+        # 显示进度动画
+        local spinner_chars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+        local i=0
+        echo "正在下载直播源文件..."
+        
+        while kill -0 $download_pid 2>/dev/null; do
+            local char=${spinner_chars:$((i % ${#spinner_chars})):1}
+            printf "\r%s 下载中... (如长时间无响应，请按 Ctrl+C 中断)" "$char"
+            sleep 0.2
+            i=$((i + 1))
+        done
+        
+        # 等待进程完成并获取退出状态
+        wait $download_pid
+        local exit_code=$?
+        
+        printf "\r%*s\r" 60 ""  # 清除进度行
+        
+        if [ $exit_code -eq 0 ]; then
+            log_info "✓ 直播源下载完成!"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            
+            # 显示下载结果
+            if [ -f "/tmp/iptv_install_output.log" ]; then
+                echo "下载详情:"
+                tail -n 5 /tmp/iptv_install_output.log | grep -E "(下载|完成|成功)" || echo "请查看日志文件获取详细信息"
+                rm -f /tmp/iptv_install_output.log
+            fi
         else
-            log_warn "直播源下载遇到问题，请检查网络连接"
+            log_warn "✗ 直播源下载遇到问题"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "可能的原因:"
+            echo "  • 网络连接问题"
+            echo "  • 直播源服务器暂时不可用"
+            echo "  • 防火墙阻止了连接"
+            echo
+            echo "解决方案:"
+            echo "  • 稍后使用 'iptv' 命令重试"
+            echo "  • 检查网络连接: ping google.com"
+            echo "  • 查看详细日志: tail -f $INSTALL_DIR/logs/iptv_manager_$(date +%Y%m%d).log"
+            
+            if [ -f "/tmp/iptv_install_output.log" ]; then
+                echo
+                echo "错误详情:"
+                cat /tmp/iptv_install_output.log
+                rm -f /tmp/iptv_install_output.log
+            fi
         fi
+        echo
     fi
 }
 
@@ -507,16 +633,18 @@ show_completion() {
     echo
     echo -e "${YELLOW}使用方法:${NC}"
     if [[ -f "/usr/local/bin/iptv" ]]; then
-        echo "  iptv                              # 执行下载任务（全局命令）"
+        echo "  iptv                              # 进入交互式菜单（推荐）"
+        echo "  iptv --download                   # 直接下载直播源"
         echo "  iptv --status                     # 查看状态"
         echo "  iptv --help                       # 查看帮助"
         echo
         echo "  或者使用完整路径："
         echo "  cd $INSTALL_DIR"
-        echo "  python3 iptv_manager.py          # 执行下载任务"
+        echo "  python3 iptv_manager.py          # 进入交互式菜单"
     else
         echo "  cd $INSTALL_DIR"
-        echo "  python3 iptv_manager.py          # 执行下载任务"
+        echo "  python3 iptv_manager.py          # 进入交互式菜单"
+        echo "  python3 iptv_manager.py --download # 直接下载直播源"
         echo "  python3 iptv_manager.py --status # 查看状态"
         echo "  python3 iptv_manager.py --help   # 查看帮助"
     fi
@@ -580,19 +708,47 @@ main() {
     # 设置清理陷阱
     trap cleanup EXIT
     
-    check_root
-    get_user_preferences
-    check_system
-    install_system_deps
-    download_files
-    install_python_deps
-    create_directories
-    install_scripts
-    create_symlink
-    test_installation
-    setup_cron
-    run_script
-    show_completion
+    # 安装步骤列表
+    local steps=(
+        "check_root:检查用户权限"
+        "get_user_preferences:获取用户配置"
+        "check_system:检查系统环境"
+        "install_system_deps:安装系统依赖"
+        "download_files:下载项目文件"
+        "install_python_deps:安装Python依赖"
+        "create_directories:创建目录结构"
+        "install_scripts:安装脚本文件"
+        "create_symlink:创建软连接"
+        "test_installation:测试安装"
+        "setup_cron:设置定时任务"
+        "run_script:运行脚本"
+        "show_completion:显示完成信息"
+    )
+    
+    local total_steps=${#steps[@]}
+    local current_step=0
+    
+    echo
+    echo -e "${BLUE}🚀 开始安装过程${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    for step_info in "${steps[@]}"; do
+        local step_func="${step_info%%:*}"
+        local step_desc="${step_info##*:}"
+        
+        current_step=$((current_step + 1))
+        show_progress_bar $current_step $total_steps "安装进度"
+        echo -e "${BLUE}[$current_step/$total_steps]${NC} $step_desc..."
+        
+        # 执行步骤
+        $step_func
+        
+        echo -e "${GREEN}✓${NC} $step_desc 完成"
+        echo
+    done
+    
+    echo -e "${GREEN}🎉 所有安装步骤完成！${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 
 # 执行主函数
