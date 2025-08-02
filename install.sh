@@ -53,6 +53,46 @@ show_progress_bar() {
     fi
 }
 
+# 语言选择函数
+select_language() {
+    if [[ "${SKIP_INTERACTIVE:-}" != "true" ]]; then
+        # 重新打开标准输入以确保可以交互
+        exec < /dev/tty 2>/dev/null || true
+        
+        echo
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Language Selection / 语言选择"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Please select your preferred language:"
+        echo "请选择您的首选语言:"
+        echo
+        echo "1) 中文 (Chinese)"
+        echo "2) English"
+        echo
+        echo -n "Enter option (default: 1) / 输入选项 (默认: 1) > "
+        read lang_choice
+        
+        case ${lang_choice:-1} in
+            1)
+                SELECTED_LANGUAGE="zh"
+                log_info "[OK] 已选择中文界面"
+                ;;
+            2)
+                SELECTED_LANGUAGE="en"
+                log_info "[OK] English interface selected"
+                ;;
+            *)
+                log_warn "Invalid choice, using Chinese / 无效选择，使用中文"
+                SELECTED_LANGUAGE="zh"
+                ;;
+        esac
+    else
+        # 非交互模式，使用环境变量或默认值
+        SELECTED_LANGUAGE="${INSTALL_LANGUAGE:-zh}"
+        log_info "Non-interactive mode: Language set to $SELECTED_LANGUAGE"
+    fi
+}
+
 # 用户交互函数
 get_user_preferences() {
     log_step "配置安装选项..."
@@ -380,12 +420,13 @@ create_directories() {
 install_scripts() {
     echo "  [安装] 脚本文件..."
     
-    # 修改配置文件中的路径
-    echo "     更新配置文件路径设置..."
+    # 修改配置文件中的路径和语言设置
+    echo "     更新配置文件路径和语言设置..."
     python3 -c "
 import json
 with open('config.json', 'r') as f:
     config = json.load(f)
+config['language'] = '$SELECTED_LANGUAGE'
 config['directories']['base_dir'] = '$INSTALL_DIR'
 config['directories']['data_dir'] = '$DATA_DIR'
 config['directories']['backup_dir'] = '$INSTALL_DIR/backup'
@@ -787,23 +828,28 @@ show_completion() {
 
 # 显示帮助信息
 show_help() {
-    echo "IPTV直播源管理脚本一键安装程序"
-    echo "========================================"
+    echo "IPTV直播源管理脚本一键安装程序 / IPTV Manager One-Click Installer"
+    echo "=================================================================="
     echo
-    echo "使用方法:"
-    echo "  bash install.sh                    # 交互式安装"
-    echo "  curl -fsSL <url> | bash            # 使用默认配置安装"
+    echo "使用方法 / Usage:"
+    echo "  bash install.sh                    # 交互式安装 / Interactive installation"
+    echo "  curl -fsSL <url> | bash            # 使用默认配置安装 / Install with defaults"
     echo
-    echo "环境变量配置（非交互模式）:"
+    echo "环境变量配置（非交互模式）/ Environment Variables (Non-interactive):"
     echo "  SKIP_INTERACTIVE=true             # 跳过交互，使用默认或环境变量配置"
+    echo "  INSTALL_LANGUAGE=zh|en            # 界面语言 (zh=中文, en=English)"
     echo "  CUSTOM_INSTALL_DIR=/path/to/dir   # 自定义安装目录"
     echo "  CUSTOM_DATA_DIR=/path/to/data     # 自定义数据目录"
     echo "  AUTO_RUN=Y                        # 安装后自动运行（Y/n）"
     echo "  CREATE_SYMLINK=Y                  # 创建全局命令软连接（Y/n）"
     echo
-    echo "示例:"
-    echo "  CUSTOM_INSTALL_DIR=/home/user/iptv CUSTOM_DATA_DIR=/media/iptv bash install.sh"
-    echo "  SKIP_INTERACTIVE=true bash install.sh"
+    echo "示例 / Examples:"
+    echo "  # 中文界面，自定义目录"
+    echo "  INSTALL_LANGUAGE=zh CUSTOM_INSTALL_DIR=/home/user/iptv bash install.sh"
+    echo "  # English interface, custom directories"
+    echo "  INSTALL_LANGUAGE=en CUSTOM_INSTALL_DIR=/opt/iptv CUSTOM_DATA_DIR=/media/iptv bash install.sh"
+    echo "  # 完全非交互式安装"
+    echo "  SKIP_INTERACTIVE=true INSTALL_LANGUAGE=en bash install.sh"
     echo
 }
 
@@ -835,6 +881,7 @@ main() {
     # 安装步骤列表
     local steps=(
         "check_root:检查用户权限"
+        "select_language:选择语言"
         "get_user_preferences:获取用户配置"
         "check_system:检查系统环境"
         "install_system_deps:安装系统依赖"

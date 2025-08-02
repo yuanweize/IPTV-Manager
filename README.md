@@ -1,6 +1,23 @@
-# IPTV直播源管理脚本
+<div align="center">
 
-一个专为Debian服务器环境设计的高性能IPTV直播源自动下载和管理脚本，支持多源并发下载、自动更新、配置化管理和完整的维护功能。
+# 🎬 IPTV Manager
+
+*高性能IPTV直播源管理工具*
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.6+-green.svg)](https://python.org)
+[![Platform](https://img.shields.io/badge/platform-Linux-lightgrey.svg)](https://www.linux.org/)
+[![GitHub stars](https://img.shields.io/github/stars/yuanweize/IPTV-Manager.svg?style=social)](https://github.com/yuanweize/IPTV-Manager/stargazers)
+
+[English](README_EN.md) | 简体中文
+
+</div>
+
+---
+
+## 📖 项目简介
+
+一个专为Debian/Ubuntu服务器环境设计的高性能IPTV直播源自动下载和管理脚本，支持多源并发下载、自动更新、配置化管理和完整的维护功能。
 
 ## 🚀 一键安装
 
@@ -97,6 +114,7 @@ SKIP_INTERACTIVE=true CUSTOM_INSTALL_DIR=/opt/iptv bash install.sh
 | 环境变量             | 说明               | 默认值              |
 | -------------------- | ------------------ | ------------------- |
 | `SKIP_INTERACTIVE`   | 跳过交互模式       | `false`             |
+| `INSTALL_LANGUAGE`   | 界面语言           | `zh` (中文)         |
 | `CUSTOM_INSTALL_DIR` | 自定义安装目录     | `/opt/IPTV-Manager` |
 | `CUSTOM_DATA_DIR`    | 自定义数据目录     | `{安装目录}/data`   |
 | `AUTO_RUN`           | 安装后自动运行     | `Y`                 |
