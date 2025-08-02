@@ -989,19 +989,51 @@ def uninstall_program(manager):
         print()
         print("[卸载] 开始卸载程序...")
         
-        # 获取目录配置
-        if hasattr(manager.config, 'get'):
-            directories = manager.config.get('directories', {})
-            base_dir = directories.get('base_dir', '/opt/IPTV-Manager')
-            data_dir = directories.get('data_dir', f'{base_dir}/data')
-        else:
-            directories = getattr(manager.config, 'directories', {})
-            if hasattr(directories, 'get'):
-                base_dir = directories.get('base_dir', '/opt/IPTV-Manager')
-                data_dir = directories.get('data_dir', f'{base_dir}/data')
-            else:
-                base_dir = getattr(directories, 'base_dir', '/opt/IPTV-Manager')
-                data_dir = getattr(directories, 'data_dir', f'{base_dir}/data')
+        # 获取实际的目录配置
+        print("[信息] 正在读取当前安装配置...")
+        
+        # 首先尝试从当前工作目录获取配置
+        current_dir = Path.cwd()
+        config_file = current_dir / 'config.json'
+        
+        base_dir = None
+        data_dir = None
+        
+        if config_file.exists():
+            try:
+                import json
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    file_config = json.load(f)
+                base_dir = file_config.get('directories', {}).get('base_dir', str(current_dir))
+                data_dir = file_config.get('directories', {}).get('data_dir', f'{base_dir}/data')
+                print(f"[配置] 从配置文件读取: {config_file}")
+            except Exception as e:
+                print(f"[警告] 读取配置文件失败: {e}")
+        
+        # 如果配置文件读取失败，尝试从manager对象获取
+        if not base_dir:
+            try:
+                if hasattr(manager.config, 'get'):
+                    directories = manager.config.get('directories', {})
+                    base_dir = directories.get('base_dir', str(current_dir))
+                    data_dir = directories.get('data_dir', f'{base_dir}/data')
+                else:
+                    directories = getattr(manager.config, 'directories', {})
+                    if hasattr(directories, 'get'):
+                        base_dir = directories.get('base_dir', str(current_dir))
+                        data_dir = directories.get('data_dir', f'{base_dir}/data')
+                    else:
+                        base_dir = getattr(directories, 'base_dir', str(current_dir))
+                        data_dir = getattr(directories, 'data_dir', f'{base_dir}/data')
+                print(f"[配置] 从管理器对象读取")
+            except Exception as e:
+                print(f"[警告] 从管理器读取配置失败: {e}")
+                base_dir = str(current_dir)
+                data_dir = f'{base_dir}/data'
+        
+        print(f"[路径] 程序目录: {base_dir}")
+        print(f"[路径] 数据目录: {data_dir}")
+        print()
         
         # 删除cron任务
         print("[卸载] 删除定时任务...")

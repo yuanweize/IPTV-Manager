@@ -181,13 +181,21 @@ get_user_preferences() {
     # 检查是否可以交互
     if [[ "${SKIP_INTERACTIVE:-}" != "true" ]]; then
         echo
-        read -p "确认以上配置并开始安装? (Y/n): " confirm_install
+        echo "选择操作:"
+        echo "Y) 确认配置，开始安装"
+        echo "n) 取消安装"
+        echo
+        read -p "请输入你的选择 (Y/n) [默认: Y]，然后按回车: " confirm_install
         confirm_install=${confirm_install:-Y}
         
         if [[ ! "$confirm_install" =~ ^[Yy]$ ]]; then
-            log_info "用户取消安装"
+            echo
+            echo "安装已取消。如需重新配置，请重新运行安装脚本。"
             exit 0
         fi
+        echo "✓ 配置确认，开始安装"
+        echo "按回车继续..."
+        read
     fi
     
     echo
@@ -196,19 +204,31 @@ get_user_preferences() {
 # 检查是否为root用户
 check_root() {
     if [[ $EUID -eq 0 ]]; then
-        log_warn "检测到root用户，建议使用普通用户运行此脚本"
+        echo "  ⚠️  检测到root用户"
+        echo "     建议: 使用普通用户运行此脚本以提高安全性"
+        echo "     影响: root用户安装可能导致权限问题"
         
         # 检查是否通过管道执行
-        if [[ -t 0 ]]; then
-            # 标准输入是终端，可以交互
-            read -p "是否继续? (y/N): " -n 1 -r
+        if [[ "${SKIP_INTERACTIVE:-}" != "true" ]] && [[ -t 0 ]]; then
+            echo
+            echo "选择操作:"
+            echo "y) 继续使用root用户安装"
+            echo "N) 退出，切换到普通用户后重新运行"
+            echo
+            read -p "请输入你的选择 (y/N) [默认: N]，然后按回车: " -r
             echo
             if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "安装已取消。请使用普通用户重新运行："
+                echo "  su - username"
+                echo "  ./install.sh"
                 exit 1
             fi
+            echo "✓ 继续使用root用户安装"
+            echo "按回车继续..."
+            read
         else
-            # 通过管道执行，自动继续但给出警告
-            log_warn "通过管道执行，自动继续安装（3秒后开始）"
+            # 通过管道执行或非交互模式，自动继续但给出警告
+            echo "     模式: 非交互模式，自动继续安装（3秒后开始）"
             sleep 3
         fi
     fi
@@ -216,14 +236,17 @@ check_root() {
 
 # 检查系统类型
 check_system() {
-    log_step "检查系统环境..."
+    echo "  🔍 检查系统兼容性..."
     
     if [[ ! -f /etc/debian_version ]]; then
-        log_error "此脚本仅支持Debian/Ubuntu系统"
+        echo "  ❌ 系统不兼容"
+        echo "     错误: 此脚本仅支持Debian/Ubuntu系统"
+        echo "     当前系统: $(uname -s)"
         exit 1
     fi
     
-    log_info "系统检查通过: $(lsb_release -d | cut -f2)"
+    local system_info=$(lsb_release -d 2>/dev/null | cut -f2 || echo "Debian/Ubuntu")
+    echo "  ✓ 系统兼容性检查通过: $system_info"
 }
 
 # 安装系统依赖
@@ -250,11 +273,12 @@ install_system_deps() {
 
 # 下载项目文件
 download_files() {
-    log_step "下载项目文件..."
+    echo "  📦 下载项目文件..."
     
     # 创建临时目录
     TEMP_DIR=$(mktemp -d)
     cd "$TEMP_DIR"
+    echo "     临时目录: $TEMP_DIR"
     
     # 下载文件列表
     local files=("iptv_manager.py" "config.json" "requirements.txt")
@@ -362,10 +386,10 @@ create_directories() {
 
 # 安装脚本文件
 install_scripts() {
-    log_step "安装脚本文件..."
+    echo "  📋 安装脚本文件..."
     
     # 修改配置文件中的路径
-    log_info "更新配置文件中的路径设置..."
+    echo "     更新配置文件路径设置..."
     python3 -c "
 import json
 with open('config.json', 'r') as f:
@@ -376,28 +400,47 @@ config['directories']['backup_dir'] = '$INSTALL_DIR/backup'
 config['directories']['log_dir'] = '$INSTALL_DIR/logs'
 with open('config.json', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
-"
+" 2>/dev/null
+    
+    if [ $? -eq 0 ]; then
+        echo "     ✓ 配置文件更新成功"
+    else
+        echo "     ❌ 配置文件更新失败"
+        exit 1
+    fi
     
     # 复制文件到目标目录
+    echo "     复制文件到安装目录..."
+    local files_copied=0
     for file in iptv_manager.py config.json requirements.txt; do
         if [[ -f "$file" ]]; then
-            cp "$file" "$INSTALL_DIR/"
-            log_info "安装文件: $file"
+            if cp "$file" "$INSTALL_DIR/" 2>/dev/null; then
+                echo "       ✓ $file"
+                files_copied=$((files_copied + 1))
+            else
+                echo "       ❌ $file (复制失败)"
+                exit 1
+            fi
         else
-            log_error "文件不存在: $file"
+            echo "       ❌ $file (文件不存在)"
             exit 1
         fi
     done
     
     # 设置执行权限
-    chmod +x "$INSTALL_DIR/iptv_manager.py"
+    echo "     设置执行权限..."
+    if chmod +x "$INSTALL_DIR/iptv_manager.py" 2>/dev/null; then
+        echo "     ✓ 执行权限设置成功"
+    else
+        echo "     ⚠️  执行权限设置失败，但不影响使用"
+    fi
     
-    log_info "脚本文件安装完成"
+    echo "  ✓ 共安装 $files_copied 个文件"
 }
 
 # 创建软连接
 create_symlink() {
-    log_step "创建软连接..."
+    echo "  🔗 配置全局命令软连接..."
     
     local symlink_path="/usr/local/bin/iptv"
     local target_script="$INSTALL_DIR/iptv_manager.py"
@@ -408,65 +451,94 @@ create_symlink() {
         exec < /dev/tty 2>/dev/null || true
         
         echo
-        echo "是否创建全局命令软连接？"
-        echo "创建后可以在任何位置使用 'iptv' 命令"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🔗 全局命令软连接"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "创建软连接后可以在任何位置使用 'iptv' 命令"
         echo "软连接位置: $symlink_path"
+        echo "目标程序: $target_script"
         echo
-        read -p "创建软连接? (Y/n): " create_link
+        echo "提示: 推荐创建，使用更方便"
+        echo
+        read -p "请输入你的选择 (Y/n) [默认: Y]，然后按回车: " create_link
         create_link=${create_link:-Y}
+        
+        if [[ "$create_link" =~ ^[Yy]$ ]]; then
+            echo "✓ 将创建全局命令软连接"
+        else
+            echo "✓ 跳过软连接创建"
+        fi
+        echo "按回车继续..."
+        read
     else
         # 非交互模式，使用环境变量或默认值
         create_link="${CREATE_SYMLINK:-Y}"
     fi
     
     if [[ "$create_link" =~ ^[Yy]$ ]]; then
-        # 检查是否已存在
+        # 检查是否已存在并验证目标
         if [[ -L "$symlink_path" ]]; then
-            log_warn "软连接已存在，正在更新..."
-            sudo rm -f "$symlink_path"
+            # 是软连接，检查目标是否正确
+            current_target=$(readlink "$symlink_path" 2>/dev/null || echo "")
+            if [[ "$current_target" == "$target_script" ]]; then
+                echo "  ✓ 软连接已存在且指向正确位置"
+                return
+            else
+                echo "  🔄 软连接存在但指向不同位置，正在更新..."
+                echo "     当前指向: $current_target"
+                echo "     更新指向: $target_script"
+                sudo rm -f "$symlink_path"
+            fi
         elif [[ -f "$symlink_path" ]]; then
-            log_warn "发现同名文件 $symlink_path，跳过软连接创建"
-            return
+            # 是普通文件，检查是否是我们的包装脚本
+            if grep -q "cd.*iptv_manager.py" "$symlink_path" 2>/dev/null; then
+                # 是我们的包装脚本，检查路径是否正确
+                if grep -q "cd \"$INSTALL_DIR\"" "$symlink_path" 2>/dev/null; then
+                    echo "  ✓ 包装脚本已存在且路径正确"
+                    return
+                else
+                    echo "  🔄 包装脚本存在但路径不同，正在更新..."
+                    sudo rm -f "$symlink_path"
+                fi
+            else
+                echo "  ⚠️  发现同名文件但不是IPTV相关，跳过软连接创建"
+                echo "     文件位置: $symlink_path"
+                echo "     请手动处理后重新安装"
+                return
+            fi
         fi
         
-        # 创建软连接
-        if sudo ln -sf "$target_script" "$symlink_path"; then
-            log_info "✓ 软连接创建成功: $symlink_path -> $target_script"
-            
-            # 创建包装脚本以确保在正确目录执行
-            local wrapper_script="/tmp/iptv_wrapper"
-            cat > "$wrapper_script" << EOF
+        # 创建包装脚本以确保在正确目录执行
+        echo "  📝 创建包装脚本..."
+        local wrapper_script="/tmp/iptv_wrapper_$$"
+        cat > "$wrapper_script" << EOF
 #!/bin/bash
 # IPTV Manager 包装脚本
+# 安装路径: $INSTALL_DIR
+# 创建时间: $(date)
 cd "$INSTALL_DIR" && python3 iptv_manager.py "\$@"
 EOF
-            chmod +x "$wrapper_script"
-            sudo mv "$wrapper_script" "$symlink_path"
-            
-            log_info "现在可以在任何位置使用 'iptv' 命令了！"
-            echo
-            echo "使用示例:"
-            echo "  iptv                    # 进入交互菜单"
-            echo "  iptv --download         # 直接下载直播源"
-            echo "  iptv --status          # 查看状态"
-            echo "  iptv --help            # 查看帮助"
+        chmod +x "$wrapper_script"
+        
+        if sudo mv "$wrapper_script" "$symlink_path" 2>/dev/null; then
+            echo "  ✓ 全局命令创建成功: $symlink_path"
+            echo "     目标目录: $INSTALL_DIR"
+            echo "     现在可以在任何位置使用 'iptv' 命令"
         else
-            log_warn "软连接创建失败，可能需要管理员权限"
-            echo "你可以手动创建软连接："
-            echo "  sudo ln -sf $target_script $symlink_path"
+            echo "  ❌ 全局命令创建失败"
+            echo "     原因: 可能需要管理员权限"
+            echo "     手动创建: sudo ln -sf $target_script $symlink_path"
+            rm -f "$wrapper_script" 2>/dev/null
         fi
     else
-        log_info "跳过软连接创建"
-        echo "你可以通过以下方式使用脚本："
-        echo "  cd $INSTALL_DIR && python3 iptv_manager.py"
+        echo "  ✓ 跳过软连接创建"
+        echo "     使用方法: cd $INSTALL_DIR && python3 iptv_manager.py"
     fi
-    
-    echo
 }
 
 # 测试安装
 test_installation() {
-    log_step "测试安装..."
+    echo "  🧪 测试安装结果..."
     
     # 保存当前目录
     ORIGINAL_DIR=$(pwd)
@@ -475,28 +547,31 @@ test_installation() {
     cd "$INSTALL_DIR"
     
     # 测试脚本语法
+    echo "     检查脚本语法..."
     if python3 -m py_compile iptv_manager.py 2>/dev/null; then
-        log_info "脚本语法检查通过"
+        echo "     ✓ 脚本语法检查通过"
     else
-        log_error "脚本语法检查失败"
+        echo "     ❌ 脚本语法检查失败"
         cd "$ORIGINAL_DIR"
         exit 1
     fi
     
     # 测试配置文件
+    echo "     检查配置文件..."
     if python3 -c "import json; json.load(open('config.json'))" 2>/dev/null; then
-        log_info "配置文件格式正确"
+        echo "     ✓ 配置文件格式正确"
     else
-        log_error "配置文件格式错误"
+        echo "     ❌ 配置文件格式错误"
         cd "$ORIGINAL_DIR"
         exit 1
     fi
     
     # 测试运行
-    if python3 iptv_manager.py --status 2>/dev/null; then
-        log_info "脚本运行测试通过"
+    echo "     测试程序运行..."
+    if python3 iptv_manager.py --status >/dev/null 2>&1; then
+        echo "     ✓ 程序运行测试通过"
     else
-        log_info "脚本基础功能正常（首次运行无数据是正常的）"
+        echo "     ✓ 程序基础功能正常（首次运行无数据是正常的）"
     fi
     
     # 返回原目录
@@ -505,61 +580,83 @@ test_installation() {
 
 # 设置定时任务
 setup_cron() {
-    log_step "设置定时任务..."
+    echo "  ⏰ 配置定时任务..."
     
     local choice
     
     # 检查是否可以交互
-    if [[ -t 0 ]]; then
-        # 可以交互，询问用户选择
-        echo "请选择定时任务频率:"
-        echo "1) 每6小时执行一次 (推荐)"
-        echo "2) 每天凌晨2点执行"
-        echo "3) 每小时执行一次"
-        echo "4) 跳过定时任务设置"
+    if [[ "${SKIP_INTERACTIVE:-}" != "true" ]]; then
+        # 重新打开标准输入以确保可以交互
+        exec < /dev/tty 2>/dev/null || true
         
-        read -p "请输入选择 (1-4) [默认: 1]: " choice
+        echo
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "⏰ 定时任务设置"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "定时任务将自动下载和更新直播源"
+        echo
+        echo "1) 每6小时执行一次 (推荐，平衡更新频率和系统负载)"
+        echo "2) 每天凌晨2点执行 (适合低峰期更新)"
+        echo "3) 每小时执行一次 (频繁更新，适合对实时性要求高的场景)"
+        echo "4) 跳过定时任务设置 (稍后手动配置)"
+        echo
+        echo "提示: 推荐选择选项1，既能保持更新又不会过于频繁"
+        echo
+        read -p "请输入你的选择 (1-4) [默认: 1]，然后按回车: " choice
         choice=${choice:-1}
+        
+        case $choice in
+            1) echo "✓ 已选择：每6小时执行一次" ;;
+            2) echo "✓ 已选择：每天凌晨2点执行" ;;
+            3) echo "✓ 已选择：每小时执行一次" ;;
+            4) echo "✓ 已选择：跳过定时任务设置" ;;
+            *) echo "✓ 无效选择，使用默认：每6小时执行一次"; choice=1 ;;
+        esac
+        echo "按回车继续..."
+        read
     else
-        # 管道模式，使用默认值
-        log_info "管道模式，使用默认定时任务设置（每6小时执行一次）"
+        # 非交互模式，使用默认值
+        echo "     模式: 非交互模式，使用默认定时任务设置（每6小时执行一次）"
         choice=1
     fi
     
     case $choice in
         1)
             CRON_ENTRY="0 */6 * * * cd $INSTALL_DIR && python3 iptv_manager.py --download >> $INSTALL_DIR/logs/cron.log 2>&1"
-            log_info "设置定时任务：每6小时执行一次"
             ;;
         2)
             CRON_ENTRY="0 2 * * * cd $INSTALL_DIR && python3 iptv_manager.py --download >> $INSTALL_DIR/logs/cron.log 2>&1"
-            log_info "设置定时任务：每天凌晨2点执行"
             ;;
         3)
             CRON_ENTRY="0 * * * * cd $INSTALL_DIR && python3 iptv_manager.py --download >> $INSTALL_DIR/logs/cron.log 2>&1"
-            log_info "设置定时任务：每小时执行一次"
             ;;
         4)
-            log_info "跳过定时任务设置"
+            echo "  ✓ 跳过定时任务设置"
             return
             ;;
         *)
-            log_warn "无效选择，使用默认设置（每6小时执行一次）"
             CRON_ENTRY="0 */6 * * * cd $INSTALL_DIR && python3 iptv_manager.py --download >> $INSTALL_DIR/logs/cron.log 2>&1"
             ;;
     esac
     
     # 添加到crontab
-    (crontab -l 2>/dev/null; echo "$CRON_ENTRY") | crontab -
-    log_info "定时任务设置完成"
+    echo "  📝 添加定时任务到crontab..."
+    if (crontab -l 2>/dev/null; echo "$CRON_ENTRY") | crontab - 2>/dev/null; then
+        echo "  ✓ 定时任务设置完成"
+        echo "     任务内容: $CRON_ENTRY"
+    else
+        echo "  ⚠️  定时任务设置失败，请手动添加："
+        echo "     crontab -e"
+        echo "     添加行: $CRON_ENTRY"
+    fi
 }
 
 # 立即运行脚本
 run_script() {
     if [[ "$RUN_IMMEDIATELY" =~ ^[Yy]$ ]]; then
-        log_step "立即下载直播源..."
-        echo "正在初始化下载任务，请稍候..."
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  🚀 立即下载直播源..."
+        echo "     正在初始化下载任务，请稍候..."
+        echo "     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         
         cd "$INSTALL_DIR"
         
@@ -586,18 +683,19 @@ run_script() {
         }
         
         # 在后台运行下载任务
-        python3 iptv_manager.py > /tmp/iptv_install_output.log 2>&1 &
+        local log_file="/tmp/iptv_install_output_$$.log"
+        python3 iptv_manager.py > "$log_file" 2>&1 &
         local download_pid=$!
         
-        # 显示进度动画
-        local spinner_chars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+        # 显示进度动画（使用ASCII字符）
+        local spinner_chars="|/-\\"
         local i=0
-        echo "正在下载直播源文件..."
+        echo "     正在下载直播源文件..."
         
         while kill -0 $download_pid 2>/dev/null; do
             local char=${spinner_chars:$((i % ${#spinner_chars})):1}
-            printf "\r%s 下载中... (如长时间无响应，请按 Ctrl+C 中断)" "$char"
-            sleep 0.2
+            printf "\r     %s 下载中... (如长时间无响应，请按 Ctrl+C 中断)" "$char"
+            sleep 0.3
             i=$((i + 1))
         done
         
@@ -605,39 +703,43 @@ run_script() {
         wait $download_pid
         local exit_code=$?
         
-        printf "\r%*s\r" 60 ""  # 清除进度行
+        printf "\r%*s\r" 70 ""  # 清除进度行
         
         if [ $exit_code -eq 0 ]; then
-            log_info "✓ 直播源下载完成!"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "     ✓ 直播源下载完成!"
+            echo "     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             
             # 显示下载结果
-            if [ -f "/tmp/iptv_install_output.log" ]; then
-                echo "下载详情:"
-                tail -n 5 /tmp/iptv_install_output.log | grep -E "(下载|完成|成功)" || echo "请查看日志文件获取详细信息"
-                rm -f /tmp/iptv_install_output.log
+            if [ -f "$log_file" ]; then
+                echo "     下载详情:"
+                local success_info=$(tail -n 10 "$log_file" | grep -E "(下载|完成|成功|源)" | head -3)
+                if [ -n "$success_info" ]; then
+                    echo "$success_info" | sed 's/^/       /'
+                else
+                    echo "       请查看日志文件获取详细信息"
+                fi
+                rm -f "$log_file"
             fi
         else
-            log_warn "✗ 直播源下载遇到问题"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "可能的原因:"
-            echo "  • 网络连接问题"
-            echo "  • 直播源服务器暂时不可用"
-            echo "  • 防火墙阻止了连接"
+            echo "     ❌ 直播源下载遇到问题"
+            echo "     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "     可能的原因:"
+            echo "       • 网络连接问题"
+            echo "       • 直播源服务器暂时不可用"
+            echo "       • 防火墙阻止了连接"
             echo
-            echo "解决方案:"
-            echo "  • 稍后使用 'iptv' 命令重试"
-            echo "  • 检查网络连接: ping google.com"
-            echo "  • 查看详细日志: tail -f $INSTALL_DIR/logs/iptv_manager_$(date +%Y%m%d).log"
+            echo "     解决方案:"
+            echo "       • 稍后使用 'iptv' 命令重试"
+            echo "       • 检查网络连接: ping google.com"
+            echo "       • 查看详细日志: tail -f $INSTALL_DIR/logs/iptv_manager_$(date +%Y%m%d).log"
             
-            if [ -f "/tmp/iptv_install_output.log" ]; then
+            if [ -f "$log_file" ]; then
                 echo
-                echo "错误详情:"
-                cat /tmp/iptv_install_output.log
-                rm -f /tmp/iptv_install_output.log
+                echo "     错误详情:"
+                tail -n 5 "$log_file" | sed 's/^/       /'
+                rm -f "$log_file"
             fi
         fi
-        echo
     fi
 }
 
@@ -661,20 +763,25 @@ show_completion() {
     echo
     echo -e "${YELLOW}使用方法:${NC}"
     if [[ -f "/usr/local/bin/iptv" ]]; then
-        echo "  iptv                              # 进入交互式菜单（推荐）"
-        echo "  iptv --download                   # 直接下载直播源"
-        echo "  iptv --status                     # 查看状态"
-        echo "  iptv --help                       # 查看帮助"
+        echo "  [推荐] 使用全局命令："
+        echo "    iptv                            # 进入交互式菜单"
+        echo "    iptv --download                 # 直接下载直播源"
+        echo "    iptv --status                   # 查看状态"
+        echo "    iptv --help                     # 查看帮助"
         echo
-        echo "  或者使用完整路径："
-        echo "  cd $INSTALL_DIR"
-        echo "  python3 iptv_manager.py          # 进入交互式菜单"
+        echo "  [备选] 使用完整路径："
+        echo "    cd $INSTALL_DIR"
+        echo "    python3 iptv_manager.py        # 进入交互式菜单"
     else
-        echo "  cd $INSTALL_DIR"
-        echo "  python3 iptv_manager.py          # 进入交互式菜单"
-        echo "  python3 iptv_manager.py --download # 直接下载直播源"
-        echo "  python3 iptv_manager.py --status # 查看状态"
-        echo "  python3 iptv_manager.py --help   # 查看帮助"
+        echo "  使用完整路径："
+        echo "    cd $INSTALL_DIR"
+        echo "    python3 iptv_manager.py        # 进入交互式菜单"
+        echo "    python3 iptv_manager.py --download # 直接下载直播源"
+        echo "    python3 iptv_manager.py --status   # 查看状态"
+        echo "    python3 iptv_manager.py --help     # 查看帮助"
+        echo
+        echo "  [提示] 可手动创建软连接："
+        echo "    sudo ln -sf $INSTALL_DIR/iptv_manager.py /usr/local/bin/iptv"
     fi
     echo
     echo -e "${YELLOW}数据目录:${NC}"
@@ -757,7 +864,7 @@ main() {
     local current_step=0
     
     echo
-    echo -e "${BLUE}🚀 开始安装过程${NC}"
+    echo -e "${BLUE}开始安装过程${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     for step_info in "${steps[@]}"; do
@@ -766,7 +873,7 @@ main() {
         
         current_step=$((current_step + 1))
         show_progress_bar $current_step $total_steps "安装进度"
-        echo -e "${BLUE}[$current_step/$total_steps]${NC} $step_desc..."
+        echo -e "${BLUE}[$current_step/$total_steps]${NC} $step_desc"
         
         # 执行步骤
         $step_func
@@ -775,7 +882,7 @@ main() {
         echo
     done
     
-    echo -e "${GREEN}🎉 所有安装步骤完成！${NC}"
+    echo -e "${GREEN}所有安装步骤完成！${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 
