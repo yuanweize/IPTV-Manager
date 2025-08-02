@@ -6,7 +6,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone <repository-url>
+git clone https://github.com/yuanweize/IPTV-Manager.git
 cd iptv-manager
 
 # 2. 运行安装脚本
