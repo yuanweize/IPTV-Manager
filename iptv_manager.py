@@ -94,7 +94,7 @@ class IPTVConfig:
                 }
             },
             "directories": {
-                "base_dir": "/data/media/iptv",
+                "base_dir": "/opt/IPTV-Manager",
                 "data_dir": "data",
                 "backup_dir": "backup",
                 "log_dir": "logs"
