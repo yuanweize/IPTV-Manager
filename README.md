@@ -10,7 +10,9 @@
 curl -fsSL https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh | bash
 ```
 
-或者如果你想先下载再运行：
+> 💡 **一键安装说明**：使用管道方式安装时，脚本会自动使用默认配置（安装到 `/opt/IPTV-Manager`，设置每6小时执行一次的定时任务）
+
+如果你想自定义配置，请先下载再运行：
 
 ```bash
 wget https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh

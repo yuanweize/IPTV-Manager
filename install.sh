@@ -37,40 +37,48 @@ log_step() {
 get_user_preferences() {
     log_step "配置安装选项..."
     
-    # 获取安装路径
-    echo
-    echo "请选择安装路径:"
-    echo "1) 使用默认路径: $DEFAULT_INSTALL_DIR"
-    echo "2) 自定义路径"
-    echo
-    read -p "请输入选择 (1-2) [默认: 1]: " path_choice
-    
-    case ${path_choice:-1} in
-        1)
-            INSTALL_DIR="$DEFAULT_INSTALL_DIR"
-            ;;
-        2)
-            read -p "请输入自定义安装路径: " custom_path
-            if [[ -z "$custom_path" ]]; then
-                log_warn "路径不能为空，使用默认路径"
+    # 检查是否可以交互
+    if [[ -t 0 ]]; then
+        # 可以交互，询问用户选择
+        echo
+        echo "请选择安装路径:"
+        echo "1) 使用默认路径: $DEFAULT_INSTALL_DIR"
+        echo "2) 自定义路径"
+        echo
+        read -p "请输入选择 (1-2) [默认: 1]: " path_choice
+        
+        case ${path_choice:-1} in
+            1)
                 INSTALL_DIR="$DEFAULT_INSTALL_DIR"
-            else
-                INSTALL_DIR="$custom_path"
-            fi
-            ;;
-        *)
-            log_warn "无效选择，使用默认路径"
-            INSTALL_DIR="$DEFAULT_INSTALL_DIR"
-            ;;
-    esac
+                ;;
+            2)
+                read -p "请输入自定义安装路径: " custom_path
+                if [[ -z "$custom_path" ]]; then
+                    log_warn "路径不能为空，使用默认路径"
+                    INSTALL_DIR="$DEFAULT_INSTALL_DIR"
+                else
+                    INSTALL_DIR="$custom_path"
+                fi
+                ;;
+            *)
+                log_warn "无效选择，使用默认路径"
+                INSTALL_DIR="$DEFAULT_INSTALL_DIR"
+                ;;
+        esac
+        
+        # 询问是否立即运行
+        echo
+        read -p "安装完成后是否立即下载直播源? (Y/n): " run_immediately
+        RUN_IMMEDIATELY=${run_immediately:-Y}
+    else
+        # 管道模式，使用默认值
+        log_info "管道模式检测到，使用默认配置"
+        INSTALL_DIR="$DEFAULT_INSTALL_DIR"
+        RUN_IMMEDIATELY="Y"
+    fi
     
     log_info "安装路径: $INSTALL_DIR"
-    
-    # 询问是否立即运行
-    echo
-    read -p "安装完成后是否立即下载直播源? (Y/n): " run_immediately
-    RUN_IMMEDIATELY=${run_immediately:-Y}
-    
+    log_info "安装后立即运行: $RUN_IMMEDIATELY"
     echo
 }
 
@@ -78,10 +86,19 @@ get_user_preferences() {
 check_root() {
     if [[ $EUID -eq 0 ]]; then
         log_warn "检测到root用户，建议使用普通用户运行此脚本"
-        read -p "是否继续? (y/N): " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
+        
+        # 检查是否通过管道执行
+        if [[ -t 0 ]]; then
+            # 标准输入是终端，可以交互
+            read -p "是否继续? (y/N): " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                exit 1
+            fi
+        else
+            # 通过管道执行，自动继续但给出警告
+            log_warn "通过管道执行，自动继续安装（3秒后开始）"
+            sleep 3
         fi
     fi
 }
@@ -296,24 +313,37 @@ test_installation() {
 setup_cron() {
     log_step "设置定时任务..."
     
-    echo "请选择定时任务频率:"
-    echo "1) 每6小时执行一次 (推荐)"
-    echo "2) 每天凌晨2点执行"
-    echo "3) 每小时执行一次"
-    echo "4) 跳过定时任务设置"
+    local choice
     
-    read -p "请输入选择 (1-4) [默认: 1]: " choice
-    choice=${choice:-1}
+    # 检查是否可以交互
+    if [[ -t 0 ]]; then
+        # 可以交互，询问用户选择
+        echo "请选择定时任务频率:"
+        echo "1) 每6小时执行一次 (推荐)"
+        echo "2) 每天凌晨2点执行"
+        echo "3) 每小时执行一次"
+        echo "4) 跳过定时任务设置"
+        
+        read -p "请输入选择 (1-4) [默认: 1]: " choice
+        choice=${choice:-1}
+    else
+        # 管道模式，使用默认值
+        log_info "管道模式，使用默认定时任务设置（每6小时执行一次）"
+        choice=1
+    fi
     
     case $choice in
         1)
             CRON_ENTRY="0 */6 * * * cd $INSTALL_DIR && python3 iptv_manager.py >> $INSTALL_DIR/logs/cron.log 2>&1"
+            log_info "设置定时任务：每6小时执行一次"
             ;;
         2)
             CRON_ENTRY="0 2 * * * cd $INSTALL_DIR && python3 iptv_manager.py >> $INSTALL_DIR/logs/cron.log 2>&1"
+            log_info "设置定时任务：每天凌晨2点执行"
             ;;
         3)
             CRON_ENTRY="0 * * * * cd $INSTALL_DIR && python3 iptv_manager.py >> $INSTALL_DIR/logs/cron.log 2>&1"
+            log_info "设置定时任务：每小时执行一次"
             ;;
         4)
             log_info "跳过定时任务设置"
@@ -382,6 +412,14 @@ show_completion() {
 main() {
     echo -e "${BLUE}IPTV直播源管理脚本一键安装程序${NC}"
     echo "========================================"
+    echo
+    
+    # 显示执行模式
+    if [[ -t 0 ]]; then
+        log_info "交互模式：将询问配置选项"
+    else
+        log_info "管道模式：使用默认配置自动安装"
+    fi
     echo
     
     # 设置清理陷阱
