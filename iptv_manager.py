@@ -14,7 +14,7 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 多语言支持 / Multi-language support
 
 作者 / Author: IPTV管理脚本开发专家 / IPTV Management Script Expert
-版本 / Version: 1.0.9
+版本 / Version: 2.0.4
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
@@ -652,10 +652,17 @@ class IPTVManager:
 
 def show_menu():
     """显示交互式菜单 / Display interactive menu"""
-    print("\n" + "="*60)
-    print(f"    {get_text('menu_title')}")
-    print("="*60)
-    print(f"{get_text('menu_prompt').replace('请输入选项 (0-8):', '请选择要执行的操作:').replace('Enter option (0-8):', 'Please select operation:')}")
+    print("\n" + "="*70)
+    print(f"    {get_text('menu_title')} v{get_current_version()}")
+    print("="*70)
+    
+    # 显示项目信息
+    print(f"    {get_text('project_description')}")
+    print(f"    {get_text('project_url')}: https://github.com/yuanweize/IPTV-Manager")
+    print(f"    {get_text('project_author')}: IPTV Manager Team")
+    print("="*70)
+    
+    print(f"{get_text('menu_prompt').replace('请输入选项 (0-9):', '请选择要执行的操作:').replace('Enter option (0-9):', 'Please select operation:')}")
     print()
     print(f"1. {get_text('menu_download')}")
     print(f"2. {get_text('menu_status')}")
@@ -668,7 +675,7 @@ def show_menu():
     print(f"9. {get_text('menu_uninstall')}")
     print(f"0. {get_text('menu_exit')}")
     print()
-    print("="*60)
+    print("="*70)
 
 
 def interactive_mode(manager):
@@ -1020,7 +1027,7 @@ def cleanup_files(manager):
 
 def get_current_version():
     """获取当前版本号 / Get current version"""
-    return "1.0.9"
+    return "2.0.4"
 
 def get_remote_version():
     """获取远程版本号 / Get remote version"""
@@ -1359,7 +1366,7 @@ def main():
     parser.add_argument(
         '--version', 
         action='version', 
-        version='IPTV Manager 1.0.9'
+        version='IPTV Manager 2.0.4'
     )
     
     args = parser.parse_args()
