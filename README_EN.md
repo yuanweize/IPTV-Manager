@@ -193,11 +193,12 @@ Please select operation:
 4. [Config] Configuration management
 5. [Logs] View logs
 6. [Cleanup] Cleanup maintenance
-7. [Uninstall] Uninstall program
+7. [Update] Update program
+8. [Uninstall] Uninstall program
 0. [Exit] Exit program
 
 ============================================================
-Enter option (0-7):
+Enter option (0-8):
 ```
 
 ### Scheduled Tasks
@@ -278,6 +279,32 @@ The test script will check:
 - Script can execute properly
 - Directory structure is correct
 - Multi-language support is working
+
+### Program Updates
+
+IPTV Manager supports online update functionality:
+
+#### Update via Interactive Menu
+```bash
+# Start the program
+iptv
+
+# Select menu option 7 to update
+# The program will automatically check for the latest version on GitHub
+# If a new version is available, it will prompt for update
+```
+
+#### Manual Update
+```bash
+# Re-run the installation script to update
+curl -fsSL https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh | bash
+```
+
+Update Features:
+- 🔄 Automatic version checking
+- 🔧 Preserve existing configuration and data
+- 🌐 Bilingual update prompts
+- 📦 One-click update installation
 
 ### Using Makefile (Optional)
 
@@ -361,7 +388,7 @@ Adjust concurrency based on server performance:
 
 ## 📝 Version Information
 
-- **Version**: 1.0.3
+- **Version**: 1.0.5
 - **Environment**: Debian/Ubuntu servers
 - **Python Requirement**: 3.6+
 
