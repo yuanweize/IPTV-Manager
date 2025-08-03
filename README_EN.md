@@ -388,7 +388,7 @@ Adjust concurrency based on server performance:
 
 ## 📝 Version Information
 
-- **Version**: 1.0.7
+- **Version**: 1.0.8
 - **Environment**: Debian/Ubuntu servers
 - **Python Requirement**: 3.6+
 

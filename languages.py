@@ -130,6 +130,37 @@ LANG_ZH = {
     "status_report_title": "IPTV直播源管理状态报告",
     "generate_time": "生成时间",
     
+    # 日志相关
+    "log_directory": "日志目录",
+    "log_not_exist": "日志目录不存在",
+    "log_no_files": "未找到日志文件",
+    "log_recent": "最新日志内容",
+    "log_file": "日志文件",
+    "log_latest_file": "最新日志文件",
+    "log_content": "内容",
+    "log_recent_lines": "最近行数",
+    
+    # 清理相关
+    "cleanup_start": "开始清理过期文件...",
+    "cleanup_backups": "清理了过期备份文件",
+    "cleanup_logs": "清理了过期日志文件", 
+    "cleanup_complete": "清理完成！",
+    "cleanup_files": "个",
+    
+    # 通用标签
+    "label_directory": "目录",
+    "label_statistics": "统计",
+    "label_file": "文件",
+    "label_size": "大小",
+    "label_time": "时间",
+    "label_content": "内容",
+    "label_language": "语言",
+    "label_directories": "目录配置",
+    "label_sources": "直播源配置",
+    "label_download": "下载配置",
+    "label_cleanup": "清理",
+    "label_complete": "完成",
+    
     # 错误相关
     "error": "错误",
     "warning": "警告",
@@ -288,6 +319,37 @@ LANG_EN = {
     "sources": "sources",
     "status_report_title": "IPTV Live Source Management Status Report",
     "generate_time": "Generated at",
+    
+    # 日志相关
+    "log_directory": "Log Directory",
+    "log_not_exist": "Log directory does not exist",
+    "log_no_files": "No log files found",
+    "log_recent": "Recent Log Content",
+    "log_file": "Log File",
+    "log_latest_file": "Latest log file",
+    "log_content": "Content",
+    "log_recent_lines": "Recent lines",
+    
+    # 清理相关
+    "cleanup_start": "Starting cleanup of expired files...",
+    "cleanup_backups": "Cleaned up expired backup files",
+    "cleanup_logs": "Cleaned up expired log files",
+    "cleanup_complete": "Cleanup completed!",
+    "cleanup_files": "files",
+    
+    # 通用标签
+    "label_directory": "Directory",
+    "label_statistics": "Statistics",
+    "label_file": "File",
+    "label_size": "Size", 
+    "label_time": "Time",
+    "label_content": "Content",
+    "label_language": "Language",
+    "label_directories": "Directory Configuration",
+    "label_sources": "Live Source Configuration",
+    "label_download": "Download Configuration",
+    "label_cleanup": "Cleanup",
+    "label_complete": "Complete",
     
     # 错误相关
     "error": "Error",
