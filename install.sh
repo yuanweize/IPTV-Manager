@@ -2,12 +2,12 @@
 # IPTV直播源管理脚本一键安装脚本 - 开发日期: 2025-08-03
 # IPTV Live Source Management Script One-Click Installer - Development Date: 2025-08-03
 # 适用于Debian/Ubuntu系统 / For Debian/Ubuntu Systems
-# 脚本版本 / Script Version: 2.0.6
+# 脚本版本 / Script Version: 2.0.7
 
 set -e
 
 # 脚本信息
-SCRIPT_VERSION="2.0.6"
+SCRIPT_VERSION="2.0.7"
 SCRIPT_DATE="2025-08-03"
 
 # 项目信息
@@ -934,18 +934,18 @@ setup_cron() {
         echo "3) $(get_text 'every_hour')"
         echo "4) $(get_text 'skip_cron')"
         echo
-        echo "提示: 推荐选择选项1，既能保持更新又不会过于频繁"
+        echo "$(get_text 'cron_recommendation')"
         echo
-        echo -n "输入选择回车默认: 1 > "
+        echo -n "$(get_text 'enter_choice_default_1') "
         read choice
         choice=${choice:-1}
         
         case $choice in
-            1) echo "[OK] 已选择：每6小时执行一次" ;;
-            2) echo "[OK] 已选择：每天凌晨2点执行" ;;
-            3) echo "[OK] 已选择：每小时执行一次" ;;
-            4) echo "[OK] 已选择：跳过定时任务设置" ;;
-            *) echo "[OK] 无效选择，使用默认：每6小时执行一次"; choice=1 ;;
+            1) echo "$(get_text 'selected_6_hours')" ;;
+            2) echo "$(get_text 'selected_daily_2am')" ;;
+            3) echo "$(get_text 'selected_hourly')" ;;
+            4) echo "$(get_text 'selected_skip_cron')" ;;
+            *) echo "$(get_text 'invalid_choice_default_6h')"; choice=1 ;;
         esac
     else
         # 非交互模式，使用默认值

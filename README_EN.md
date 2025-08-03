@@ -19,6 +19,11 @@ English | [简体中文](README.md)
 
 A high-performance IPTV live source automatic download and management script designed specifically for Debian/Ubuntu server environments. Features multi-source concurrent downloads, automatic updates, configuration management, and comprehensive maintenance functions.
 
+📚 **Related Documents**:
+- [Changelog](CHANGELOG.md) - View the version history and changes.
+- [Contributing Guide](CONTRIBUTING.md) - Learn how to contribute code or report issues.
+- [Project Structure](PROJECT_STRUCTURE.md) - Understand the directory structure and design philosophy.
+
 ## 🚀 Quick Installation
 
 ### Method 1: Interactive Installation (Recommended)
@@ -388,7 +393,7 @@ Adjust concurrency based on server performance:
 
 ## 📝 Version Information
 
-- **Version**: 2.0.6
+- **Version**: 2.0.7
 - **Environment**: Debian/Ubuntu servers
 - **Python Requirement**: 3.6+
 

@@ -13,7 +13,7 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 兼容crontab定时执行 / Compatible with crontab scheduled execution
 - 多语言支持 / Multi-language support
 
-版本 / Version: 2.0.6
+版本 / Version: 2.0.7
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
@@ -1025,7 +1025,7 @@ def cleanup_files(manager):
 
 def get_current_version():
     """获取当前版本号 / Get current version"""
-    return "2.0.6"
+    return "2.0.7"
 
 def get_remote_version():
     """获取远程版本号 / Get remote version"""
@@ -1196,16 +1196,16 @@ def switch_language(manager):
 def uninstall_program(manager):
     """卸载程序"""
     try:
-        print("[警告] 此操作将完全删除 IPTV 管理系统及其所有数据！")
-        print("[警告] 包括：程序文件、配置文件、直播源文件、备份文件、日志文件")
+        print(f"[{get_text('warning')}] {get_text('uninstall_warning')}")
+        print(f"[{get_text('warning')}] {get_text('uninstall_warning_details')}")
         print()
         
-        confirm1 = input("确认要卸载吗？输入 'yes' 继续，其他任意键取消: ").strip()
+        confirm1 = input(f"{get_text('uninstall_confirm1')}: ").strip()
         if confirm1.lower() != 'yes':
             return False
             
         print()
-        confirm2 = input("最后确认：输入 'DELETE' 开始卸载: ").strip()
+        confirm2 = input(f"{get_text('uninstall_confirm2')}: ").strip()
         if confirm2 != 'DELETE':
             return False
             
@@ -1364,7 +1364,7 @@ def main():
     parser.add_argument(
         '--version', 
         action='version', 
-        version='IPTV Manager 2.0.6'
+        version='IPTV Manager 2.0.7'
     )
     
     args = parser.parse_args()
