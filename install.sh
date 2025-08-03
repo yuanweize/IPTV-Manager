@@ -2,12 +2,12 @@
 # IPTV直播源管理脚本一键安装脚本 - 开发日期: 2025-08-03
 # IPTV Live Source Management Script One-Click Installer - Development Date: 2025-08-03
 # 适用于Debian/Ubuntu系统 / For Debian/Ubuntu Systems
-# 脚本版本 / Script Version: 2.0.5
+# 脚本版本 / Script Version: 2.0.6
 
 set -e
 
 # 脚本信息
-SCRIPT_VERSION="2.0.5"
+SCRIPT_VERSION="2.0.6"
 SCRIPT_DATE="2025-08-03"
 
 # 项目信息
@@ -87,6 +87,119 @@ get_text() {
             "run_after_install_short") echo "Run After Installation" ;;
             "confirm_install") echo "Confirm the above configuration and start installation? (Y/n):" ;;
             "config_confirmed") echo "[OK] Configuration confirmed, starting installation" ;;
+            # 安装步骤相关
+            "step_config_options") echo "Configuring installation options..." ;;
+            "step_check_root") echo "Check user permissions" ;;
+            "step_select_language") echo "Select language" ;;
+            "step_check_update") echo "Check script updates" ;;
+            "step_get_config") echo "Get user configuration" ;;
+            "step_check_system") echo "Check system environment" ;;
+            "step_install_deps") echo "Install system dependencies" ;;
+            "step_download_files") echo "Download project files" ;;
+            "step_install_python_deps") echo "Install Python dependencies" ;;
+            "step_create_dirs") echo "Create directory structure" ;;
+            "step_install_scripts") echo "Install script files" ;;
+            "step_create_symlink") echo "Create symbolic link" ;;
+            "step_test_install") echo "Test installation" ;;
+            "step_setup_cron") echo "Setup scheduled tasks" ;;
+            "step_run_script") echo "Run script immediately" ;;
+            # 系统检查相关
+            "check_system_compat") echo "Checking system compatibility..." ;;
+            "system_compat_ok") echo "System compatibility check passed" ;;
+            "update_package_list") echo "Updating package list..." ;;
+            "python3_installed") echo "Python3 already installed" ;;
+            "install_python3") echo "Installing Python3..." ;;
+            "install_python_dev") echo "Installing Python development packages..." ;;
+            "install_tools") echo "Installing necessary tools..." ;;
+            # 下载相关
+            "download_project_files") echo "Downloading project files..." ;;
+            "temp_directory") echo "Temporary directory" ;;
+            "download_success") echo "download successful" ;;
+            "download_failed") echo "download failed" ;;
+            # 目录创建相关
+            "create_base_dir") echo "Creating base directory" ;;
+            "create_custom_data_dir") echo "Creating custom data directory" ;;
+            "create_backup_log_dirs") echo "Creating backup and log directories..." ;;
+            "set_permissions") echo "Setting directory permissions..." ;;
+            # 脚本安装相关
+            "install_script_files") echo "Installing script files..." ;;
+            "update_config_paths") echo "Updating configuration file paths and language settings..." ;;
+            "config_update_success") echo "Configuration file update successful" ;;
+            "config_update_failed") echo "Configuration file update failed" ;;
+            "copy_files_to_install") echo "Copying files to installation directory..." ;;
+            "set_exec_permissions") echo "Setting execution permissions..." ;;
+            "exec_permissions_success") echo "Execution permissions set successfully" ;;
+            "files_installed") echo "files installed" ;;
+            # 软连接相关
+            "global_command_symlink") echo "Global command symbolic link" ;;
+            "symlink_description") echo "After creation, you can use 'iptv' command anywhere" ;;
+            "symlink_location") echo "Symbolic link location" ;;
+            "target_program") echo "Target program" ;;
+            "symlink_recommended") echo "Tip: Recommended for easier use" ;;
+            "create_symlink_prompt") echo "Create global command symbolic link?(Y/n):" ;;
+            "will_create_symlink") echo "Will create global command symbolic link" ;;
+            "skip_symlink") echo "Skip symbolic link creation" ;;
+            "create_wrapper_script") echo "Creating wrapper script..." ;;
+            "global_command_success") echo "Global command created successfully" ;;
+            "target_directory") echo "Target directory" ;;
+            "can_use_iptv_anywhere") echo "Now you can use 'iptv' command anywhere" ;;
+            # 测试相关
+            "test_install_result") echo "Testing installation result..." ;;
+            "check_script_syntax") echo "Checking script syntax..." ;;
+            "script_syntax_ok") echo "Script syntax check passed" ;;
+            "check_config_file") echo "Checking configuration file..." ;;
+            "config_format_ok") echo "Configuration file format correct" ;;
+            "test_program_run") echo "Testing program execution..." ;;
+            "program_test_ok") echo "Program execution test passed" ;;
+            # Root用户警告
+            "root_detected") echo "Root user detected, recommend using regular user" ;;
+            "root_suggestion") echo "Suggestion: Use regular user to run this script for better security" ;;
+            "root_impact") echo "Impact: Root user installation may cause permission issues" ;;
+            "continue_prompt") echo "Continue? (y/N):" ;;
+            "continue_root_install") echo "Continue with root user installation" ;;
+            "install_cancelled_root") echo "Installation cancelled. Please re-run with regular user:" ;;
+            "non_interactive_mode") echo "Mode: Non-interactive mode, auto-continue installation (starting in 3 seconds)" ;;
+            # 其他常用文本
+            "selected_default_path") echo "Selected default installation path" ;;
+            "enter_custom_path") echo "Enter custom installation path (e.g., /home/user/iptv-manager):" ;;
+            "enter_custom_path_prompt") echo "Enter custom path >" ;;
+            "path_cannot_empty") echo "Path cannot be empty, using default path" ;;
+            "set_custom_install_path") echo "Set custom installation path" ;;
+            "invalid_choice_default") echo "Invalid choice, using default path" ;;
+            "enter_custom_data_dir") echo "Enter custom live source storage directory:" ;;
+            "suggested_paths") echo "Suggested path examples:" ;;
+            "external_storage") echo "(external storage)" ;;
+            "data_partition") echo "(data partition)" ;;
+            "user_directory") echo "(user directory)" ;;
+            "dir_cannot_empty") echo "Directory cannot be empty, using default directory" ;;
+            "set_custom_data_dir") echo "Set custom data directory" ;;
+            "invalid_choice_default_dir") echo "Invalid choice, using default directory" ;;
+            "will_download_after_install") echo "Will download live sources immediately after installation" ;;
+            "install_only_manual_later") echo "Installation only, can use 'iptv' command to run manually later" ;;
+            "non_interactive_detected") echo "Non-interactive mode detected, using default configuration" ;;
+            "installation_cancelled") echo "Installation cancelled. To reconfigure, please re-run the installation script." ;;
+            # 定时任务相关
+            "config_cron") echo "Configuring scheduled tasks..." ;;
+            "cron_setup") echo "Scheduled Task Setup" ;;
+            "select_cron_frequency") echo "Please select scheduled task frequency:" ;;
+            "every_6_hours") echo "Every 6 hours (recommended)" ;;
+            "daily_2am") echo "Daily at 2 AM" ;;
+            "every_hour") echo "Every hour" ;;
+            "skip_cron") echo "Skip scheduled task setup" ;;
+            "cron_recommendation") echo "Tip: Option 1 is recommended, keeps updated without being too frequent" ;;
+            "enter_choice_default_1") echo "Enter choice (default: 1) >" ;;
+            "selected_6_hours") echo "[OK] Selected: Every 6 hours" ;;
+            "selected_daily_2am") echo "[OK] Selected: Daily at 2 AM" ;;
+            "selected_hourly") echo "[OK] Selected: Every hour" ;;
+            "selected_skip_cron") echo "[OK] Selected: Skip scheduled task setup" ;;
+            "invalid_choice_default_6h") echo "[OK] Invalid choice, using default: Every 6 hours" ;;
+            "non_interactive_cron") echo "Mode: Non-interactive mode, using default scheduled task (every 6 hours)" ;;
+            "skip_cron_setup") echo "[OK] Skip scheduled task setup" ;;
+            "add_to_crontab") echo "Adding scheduled task to crontab..." ;;
+            "cron_setup_complete") echo "Scheduled task setup complete" ;;
+            "task_content") echo "Task content" ;;
+            "cron_setup_failed") echo "Scheduled task setup failed, please add manually:" ;;
+            "add_line") echo "Add line" ;;
             *) echo "$key" ;;
         esac
     else
@@ -113,6 +226,119 @@ get_text() {
             "run_after_install_short") echo "安装后立即运行" ;;
             "confirm_install") echo "确认以上配置并开始安装? (Y/n):" ;;
             "config_confirmed") echo "[OK] 配置确认，开始安装" ;;
+            # 安装步骤相关
+            "step_config_options") echo "配置安装选项..." ;;
+            "step_check_root") echo "检查用户权限" ;;
+            "step_select_language") echo "选择语言" ;;
+            "step_check_update") echo "检查脚本更新" ;;
+            "step_get_config") echo "获取用户配置" ;;
+            "step_check_system") echo "检查系统环境" ;;
+            "step_install_deps") echo "安装系统依赖" ;;
+            "step_download_files") echo "下载项目文件" ;;
+            "step_install_python_deps") echo "安装Python依赖" ;;
+            "step_create_dirs") echo "创建目录结构" ;;
+            "step_install_scripts") echo "安装脚本文件" ;;
+            "step_create_symlink") echo "创建软连接" ;;
+            "step_test_install") echo "测试安装" ;;
+            "step_setup_cron") echo "设置定时任务" ;;
+            "step_run_script") echo "立即运行脚本" ;;
+            # 系统检查相关
+            "check_system_compat") echo "[检查] 系统兼容性..." ;;
+            "system_compat_ok") echo "系统兼容性检查通过" ;;
+            "update_package_list") echo "[更新] 软件包列表..." ;;
+            "python3_installed") echo "Python3已安装" ;;
+            "install_python3") echo "[安装] Python3..." ;;
+            "install_python_dev") echo "[安装] Python开发包..." ;;
+            "install_tools") echo "[安装] 必要工具..." ;;
+            # 下载相关
+            "download_project_files") echo "[下载] 项目文件..." ;;
+            "temp_directory") echo "临时目录" ;;
+            "download_success") echo "下载成功" ;;
+            "download_failed") echo "下载失败" ;;
+            # 目录创建相关
+            "create_base_dir") echo "[创建] 基础目录" ;;
+            "create_custom_data_dir") echo "[创建] 自定义数据目录" ;;
+            "create_backup_log_dirs") echo "[创建] 备份和日志目录..." ;;
+            "set_permissions") echo "[权限] 设置目录权限..." ;;
+            # 脚本安装相关
+            "install_script_files") echo "[安装] 脚本文件..." ;;
+            "update_config_paths") echo "更新配置文件路径和语言设置..." ;;
+            "config_update_success") echo "配置文件更新成功" ;;
+            "config_update_failed") echo "配置文件更新失败" ;;
+            "copy_files_to_install") echo "复制文件到安装目录..." ;;
+            "set_exec_permissions") echo "设置执行权限..." ;;
+            "exec_permissions_success") echo "执行权限设置成功" ;;
+            "files_installed") echo "个文件" ;;
+            # 软连接相关
+            "global_command_symlink") echo "全局命令软连接" ;;
+            "symlink_description") echo "创建后可以在任何位置使用 'iptv' 命令" ;;
+            "symlink_location") echo "软连接位置" ;;
+            "target_program") echo "目标程序" ;;
+            "symlink_recommended") echo "提示: 推荐创建，使用更方便" ;;
+            "create_symlink_prompt") echo "是否创建全局命令软连接?(Y/n):" ;;
+            "will_create_symlink") echo "[OK] 将创建全局命令软连接" ;;
+            "skip_symlink") echo "[OK] 跳过软连接创建" ;;
+            "create_wrapper_script") echo "[创建] 包装脚本..." ;;
+            "global_command_success") echo "全局命令创建成功" ;;
+            "target_directory") echo "目标目录" ;;
+            "can_use_iptv_anywhere") echo "现在可以在任何位置使用 'iptv' 命令" ;;
+            # 测试相关
+            "test_install_result") echo "[测试] 安装结果..." ;;
+            "check_script_syntax") echo "检查脚本语法..." ;;
+            "script_syntax_ok") echo "脚本语法检查通过" ;;
+            "check_config_file") echo "检查配置文件..." ;;
+            "config_format_ok") echo "配置文件格式正确" ;;
+            "test_program_run") echo "测试程序运行..." ;;
+            "program_test_ok") echo "程序运行测试通过" ;;
+            # Root用户警告
+            "root_detected") echo "检测到root用户，建议使用普通用户运行此脚本" ;;
+            "root_suggestion") echo "建议: 使用普通用户运行此脚本以提高安全性" ;;
+            "root_impact") echo "影响: root用户安装可能导致权限问题" ;;
+            "continue_prompt") echo "是否继续? (y/N):" ;;
+            "continue_root_install") echo "[OK] 继续使用root用户安装" ;;
+            "install_cancelled_root") echo "安装已取消。请使用普通用户重新运行：" ;;
+            "non_interactive_mode") echo "模式: 非交互模式，自动继续安装（3秒后开始）" ;;
+            # 其他常用文本
+            "selected_default_path") echo "[OK] 已选择默认安装路径" ;;
+            "enter_custom_path") echo "请输入自定义安装路径 (例如: /home/user/iptv-manager):" ;;
+            "enter_custom_path_prompt") echo "输入自定义路径 >" ;;
+            "path_cannot_empty") echo "路径不能为空，使用默认路径" ;;
+            "set_custom_install_path") echo "[OK] 已设置自定义安装路径" ;;
+            "invalid_choice_default") echo "无效选择，使用默认路径" ;;
+            "enter_custom_data_dir") echo "请输入自定义直播源保存目录:" ;;
+            "suggested_paths") echo "建议路径示例:" ;;
+            "external_storage") echo "(外部存储)" ;;
+            "data_partition") echo "(数据分区)" ;;
+            "user_directory") echo "(用户目录)" ;;
+            "dir_cannot_empty") echo "目录不能为空，使用默认目录" ;;
+            "set_custom_data_dir") echo "[OK] 已设置自定义数据目录" ;;
+            "invalid_choice_default_dir") echo "无效选择，使用默认目录" ;;
+            "will_download_after_install") echo "[OK] 将在安装完成后立即下载直播源" ;;
+            "install_only_manual_later") echo "[OK] 仅完成安装，稍后可使用 'iptv' 命令手动运行" ;;
+            "non_interactive_detected") echo "非交互模式检测到，使用默认配置" ;;
+            "installation_cancelled") echo "安装已取消。如需重新配置，请重新运行安装脚本。" ;;
+            # 定时任务相关
+            "config_cron") echo "[配置] 定时任务..." ;;
+            "cron_setup") echo "定时任务设置" ;;
+            "select_cron_frequency") echo "请选择定时任务频率:" ;;
+            "every_6_hours") echo "每6小时执行一次 (推荐)" ;;
+            "daily_2am") echo "每天凌晨2点执行" ;;
+            "every_hour") echo "每小时执行一次" ;;
+            "skip_cron") echo "跳过定时任务设置" ;;
+            "cron_recommendation") echo "提示: 推荐选择选项1，既能保持更新又不会过于频繁" ;;
+            "enter_choice_default_1") echo "输入选择回车默认: 1 >" ;;
+            "selected_6_hours") echo "[OK] 已选择：每6小时执行一次" ;;
+            "selected_daily_2am") echo "[OK] 已选择：每天凌晨2点执行" ;;
+            "selected_hourly") echo "[OK] 已选择：每小时执行一次" ;;
+            "selected_skip_cron") echo "[OK] 已选择：跳过定时任务设置" ;;
+            "invalid_choice_default_6h") echo "[OK] 无效选择，使用默认：每6小时执行一次" ;;
+            "non_interactive_cron") echo "模式: 非交互模式，使用默认定时任务设置（每6小时执行一次）" ;;
+            "skip_cron_setup") echo "[OK] 跳过定时任务设置" ;;
+            "add_to_crontab") echo "[添加] 定时任务到crontab..." ;;
+            "cron_setup_complete") echo "定时任务设置完成" ;;
+            "task_content") echo "任务内容" ;;
+            "cron_setup_failed") echo "[警告] 定时任务设置失败，请手动添加：" ;;
+            "add_line") echo "添加行" ;;
             *) echo "$key" ;;
         esac
     fi
@@ -160,7 +386,7 @@ select_language() {
 
 # 用户交互函数
 get_user_preferences() {
-    log_step "配置安装选项..."
+    log_step "$(get_text 'step_config_options')"
     
     # 强制进入交互模式，除非明确设置了环境变量跳过
     if [[ "${SKIP_INTERACTIVE:-}" != "true" ]]; then
@@ -183,23 +409,23 @@ get_user_preferences() {
         case ${path_choice:-1} in
             1)
                 INSTALL_DIR="$DEFAULT_INSTALL_DIR"
-                log_info "[OK] 已选择默认安装路径: $INSTALL_DIR"
+                log_info "$(get_text 'selected_default_path'): $INSTALL_DIR"
                 ;;
             2)
                 echo
-                echo "请输入自定义安装路径 (例如: /home/user/iptv-manager):"
-                echo -n "输入自定义路径 > "
+                echo "$(get_text 'enter_custom_path')"
+                echo -n "$(get_text 'enter_custom_path_prompt') "
                 read custom_path
                 if [[ -z "$custom_path" ]]; then
-                    log_warn "路径不能为空，使用默认路径"
+                    log_warn "$(get_text 'path_cannot_empty')"
                     INSTALL_DIR="$DEFAULT_INSTALL_DIR"
                 else
                     INSTALL_DIR="$custom_path"
-                    log_info "[OK] 已设置自定义安装路径: $INSTALL_DIR"
+                    log_info "$(get_text 'set_custom_install_path'): $INSTALL_DIR"
                 fi
                 ;;
             *)
-                log_warn "无效选择，使用默认路径"
+                log_warn "$(get_text 'invalid_choice_default')"
                 INSTALL_DIR="$DEFAULT_INSTALL_DIR"
                 ;;
         esac
@@ -226,28 +452,28 @@ get_user_preferences() {
         case ${data_choice:-1} in
             1)
                 DATA_DIR="$INSTALL_DIR/data"
-                log_info "[OK] 已选择默认数据目录: $DATA_DIR"
+                log_info "[OK] $(get_text 'use_default_dir'): $DATA_DIR"
                 ;;
             2)
                 echo
-                echo "请输入自定义直播源保存目录:"
-                echo "建议路径示例:"
-                echo "  /media/storage/iptv    (外部存储)"
-                echo "  /data/iptv            (数据分区)"
-                echo "  /home/user/iptv-data  (用户目录)"
+                echo "$(get_text 'enter_custom_data_dir')"
+                echo "$(get_text 'suggested_paths')"
+                echo "  /media/storage/iptv    $(get_text 'external_storage')"
+                echo "  /data/iptv            $(get_text 'data_partition')"
+                echo "  /home/user/iptv-data  $(get_text 'user_directory')"
                 echo
                 echo -n "输入自定义路径 > "
                 read custom_data_dir
                 if [[ -z "$custom_data_dir" ]]; then
-                    log_warn "目录不能为空，使用默认目录"
+                    log_warn "$(get_text 'dir_cannot_empty')"
                     DATA_DIR="$INSTALL_DIR/data"
                 else
                     DATA_DIR="$custom_data_dir"
-                    log_info "[OK] 已设置自定义数据目录: $DATA_DIR"
+                    log_info "$(get_text 'set_custom_data_dir'): $DATA_DIR"
                 fi
                 ;;
             *)
-                log_warn "无效选择，使用默认目录"
+                log_warn "$(get_text 'invalid_choice_default_dir')"
                 DATA_DIR="$INSTALL_DIR/data"
                 ;;
         esac
@@ -272,13 +498,13 @@ get_user_preferences() {
         RUN_IMMEDIATELY=${run_immediately:-Y}
         
         if [[ "$RUN_IMMEDIATELY" =~ ^[Yy]$ ]]; then
-            log_info "[OK] 将在安装完成后立即下载直播源"
+            log_info "$(get_text 'will_download_after_install')"
         else
-            log_info "[OK] 仅完成安装，稍后可使用 'iptv' 命令手动运行"
+            log_info "$(get_text 'install_only_manual_later')"
         fi
     else
         # 非交互模式，使用默认值或环境变量
-        log_info "非交互模式检测到，使用默认配置"
+        log_info "$(get_text 'non_interactive_detected')"
         INSTALL_DIR="${CUSTOM_INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
         DATA_DIR="${CUSTOM_DATA_DIR:-$INSTALL_DIR/data}"
         RUN_IMMEDIATELY="${AUTO_RUN:-Y}"
@@ -305,7 +531,7 @@ get_user_preferences() {
             if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
                 echo "Installation cancelled. Please re-run the script to reconfigure."
             else
-                echo "安装已取消。如需重新配置，请重新运行安装脚本。"
+                echo "$(get_text 'installation_cancelled')"
             fi
             exit 0
         fi
@@ -318,26 +544,26 @@ get_user_preferences() {
 # 检查是否为root用户
 check_root() {
     if [[ $EUID -eq 0 ]]; then
-        log_warn "检测到root用户，建议使用普通用户运行此脚本"
-        echo "建议: 使用普通用户运行此脚本以提高安全性"
-        echo "影响: root用户安装可能导致权限问题"
+        log_warn "$(get_text 'root_detected')"
+        echo "$(get_text 'root_suggestion')"
+        echo "$(get_text 'root_impact')"
         
         # 检查是否通过管道执行
         if [[ "${SKIP_INTERACTIVE:-}" != "true" ]] && [[ -t 0 ]]; then
             echo
-            echo -n "是否继续? (y/N): "
+            echo -n "$(get_text 'continue_prompt') "
             read root_continue
             echo
             if [[ ! $root_continue =~ ^[Yy]$ ]]; then
-                echo "安装已取消。请使用普通用户重新运行："
+                echo "$(get_text 'install_cancelled_root')"
                 echo "  su - username"
                 echo "  ./install.sh"
                 exit 1
             fi
-            echo "[OK] 继续使用root用户安装"
+            echo "$(get_text 'continue_root_install')"
         else
             # 通过管道执行或非交互模式，自动继续但给出警告
-            echo "模式: 非交互模式，自动继续安装（3秒后开始）"
+            echo "$(get_text 'non_interactive_mode')"
             sleep 3
         fi
     fi
@@ -345,7 +571,7 @@ check_root() {
 
 # 检查系统类型
 check_system() {
-    echo "  [检查] 系统兼容性..."
+    echo "  $(get_text 'check_system_compat')"
     
     if [[ ! -f /etc/debian_version ]]; then
         echo "  [错误] 系统不兼容"
@@ -355,39 +581,39 @@ check_system() {
     fi
     
     local system_info=$(lsb_release -d 2>/dev/null | cut -f2 || echo "Debian/Ubuntu")
-    echo "  [OK] 系统兼容性检查通过: $system_info"
+    echo "  [OK] $(get_text 'system_compat_ok'): $system_info"
 }
 
 # 安装系统依赖
 install_system_deps() {
-    echo "  [更新] 软件包列表..."
+    echo "  $(get_text 'update_package_list')"
     sudo apt update > /dev/null 2>&1
     
     # 安装Python3和相关包
     if ! command -v python3 &> /dev/null; then
-        echo "  [安装] Python3..."
+        echo "  $(get_text 'install_python3')"
         sudo apt install -y python3 > /dev/null 2>&1
     else
-        echo "  [OK] Python3已安装: $(python3 --version)"
+        echo "  [OK] $(get_text 'python3_installed'): $(python3 --version)"
     fi
     
     # 安装Python开发包和pip相关组件
-    echo "  [安装] Python开发包..."
+    echo "  $(get_text 'install_python_dev')"
     sudo apt install -y python3-pip python3-distutils python3-setuptools python3-dev python3-venv > /dev/null 2>&1
     
     # 安装其他必要工具
-    echo "  [安装] 必要工具..."
+    echo "  $(get_text 'install_tools')"
     sudo apt install -y curl wget cron > /dev/null 2>&1
 }
 
 # 下载项目文件
 download_files() {
-    echo "  [下载] 项目文件..."
+    echo "  $(get_text 'download_project_files')"
     
     # 创建临时目录
     TEMP_DIR=$(mktemp -d)
     cd "$TEMP_DIR"
-    echo "     临时目录: $TEMP_DIR"
+    echo "     $(get_text 'temp_directory'): $TEMP_DIR"
     
     # 下载文件列表
     local files=("iptv_manager.py" "languages.py" "config.json" "requirements.txt")
@@ -399,9 +625,9 @@ download_files() {
         echo "  [下载] $file ($current_file/$total_files)..."
         
         if curl -fsSL "${GITHUB_RAW_URL}/${file}" -o "$file" 2>/dev/null; then
-            echo "    [OK] $file 下载成功"
+            echo "    [OK] $file $(get_text 'download_success')"
         else
-            echo "    [错误] $file 下载失败"
+            echo "    [错误] $file $(get_text 'download_failed')"
             rm -rf "$TEMP_DIR"
             exit 1
         fi
@@ -464,12 +690,12 @@ install_python_deps() {
 
 # 创建目录结构
 create_directories() {
-    echo "  [创建] 基础目录: $INSTALL_DIR"
+    echo "  $(get_text 'create_base_dir'): $INSTALL_DIR"
     sudo mkdir -p "$INSTALL_DIR"
     
     # 创建数据目录（可能在不同位置）
     if [[ "$DATA_DIR" != "$INSTALL_DIR/data" ]]; then
-        echo "  [创建] 自定义数据目录: $DATA_DIR"
+        echo "  $(get_text 'create_custom_data_dir'): $DATA_DIR"
         mkdir -p "$DATA_DIR"
         # 如果数据目录需要sudo权限
         if [[ ! -w "$(dirname "$DATA_DIR")" ]]; then
@@ -482,11 +708,11 @@ create_directories() {
     fi
     
     # 创建其他子目录
-    echo "  [创建] 备份和日志目录..."
+    echo "  $(get_text 'create_backup_log_dirs')"
     mkdir -p "$INSTALL_DIR"/{backup,logs}
     
     # 设置权限
-    echo "  [权限] 设置目录权限..."
+    echo "  $(get_text 'set_permissions')"
     sudo chown -R $USER:$USER "$INSTALL_DIR"
     chmod 755 "$INSTALL_DIR"
     chmod 755 "$INSTALL_DIR"/{backup,logs}
@@ -495,10 +721,10 @@ create_directories() {
 
 # 安装脚本文件
 install_scripts() {
-    echo "  [安装] 脚本文件..."
+    echo "  $(get_text 'install_script_files')"
     
     # 修改配置文件中的路径和语言设置
-    echo "     更新配置文件路径和语言设置..."
+    echo "     $(get_text 'update_config_paths')"
     python3 -c "
 import json
 with open('config.json', 'r') as f:
@@ -513,14 +739,14 @@ with open('config.json', 'w') as f:
 " 2>/dev/null
     
     if [ $? -eq 0 ]; then
-        echo "     [OK] 配置文件更新成功"
+        echo "     [OK] $(get_text 'config_update_success')"
     else
-        echo "     [错误] 配置文件更新失败"
+        echo "     [错误] $(get_text 'config_update_failed')"
         exit 1
     fi
     
     # 复制文件到目标目录
-    echo "     复制文件到安装目录..."
+    echo "     $(get_text 'copy_files_to_install')"
     local files_copied=0
     for file in iptv_manager.py languages.py config.json requirements.txt; do
         if [[ -f "$file" ]]; then
@@ -538,19 +764,19 @@ with open('config.json', 'w') as f:
     done
     
     # 设置执行权限
-    echo "     设置执行权限..."
+    echo "     $(get_text 'set_exec_permissions')"
     if chmod +x "$INSTALL_DIR/iptv_manager.py" 2>/dev/null; then
-        echo "     [OK] 执行权限设置成功"
+        echo "     [OK] $(get_text 'exec_permissions_success')"
     else
         echo "     [警告] 执行权限设置失败，但不影响使用"
     fi
     
-    echo "  [OK] 共安装 $files_copied 个文件"
+    echo "  [OK] $(get_text 'files_installed') $files_copied $(get_text 'files_installed')"
 }
 
 # 创建软连接
 create_symlink() {
-    echo "  [配置] 全局命令软连接..."
+    echo "  [$(get_text 'step_create_symlink')] $(get_text 'global_command_symlink')..."
     
     local symlink_path="/usr/local/bin/iptv"
     local target_script="$INSTALL_DIR/iptv_manager.py"
@@ -562,22 +788,22 @@ create_symlink() {
         
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "全局命令软连接"
+        echo "$(get_text 'global_command_symlink')"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "创建后可以在任何位置使用 'iptv' 命令"
-        echo "软连接位置: $symlink_path"
-        echo "目标程序: $target_script"
+        echo "$(get_text 'symlink_description')"
+        echo "$(get_text 'symlink_location'): $symlink_path"
+        echo "$(get_text 'target_program'): $target_script"
         echo
-        echo "提示: 推荐创建，使用更方便"
+        echo "$(get_text 'symlink_recommended')"
         echo
-        echo -n "是否创建全局命令软连接?(Y/n): "
+        echo -n "$(get_text 'create_symlink_prompt') "
         read create_link
         create_link=${create_link:-Y}
         
         if [[ "$create_link" =~ ^[Yy]$ ]]; then
-            echo "[OK] 将创建全局命令软连接"
+            echo "$(get_text 'will_create_symlink')"
         else
-            echo "[OK] 跳过软连接创建"
+            echo "$(get_text 'skip_symlink')"
         fi
     else
         # 非交互模式，使用环境变量或默认值
@@ -618,7 +844,7 @@ create_symlink() {
         fi
         
         # 创建包装脚本以确保在正确目录执行
-        echo "  [创建] 包装脚本..."
+        echo "  $(get_text 'create_wrapper_script')"
         local wrapper_script="/tmp/iptv_wrapper_$$"
         cat > "$wrapper_script" << EOF
 #!/bin/bash
@@ -630,9 +856,9 @@ EOF
         chmod +x "$wrapper_script"
         
         if sudo mv "$wrapper_script" "$symlink_path" 2>/dev/null; then
-            echo "  [OK] 全局命令创建成功: $symlink_path"
-            echo "     目标目录: $INSTALL_DIR"
-            echo "     现在可以在任何位置使用 'iptv' 命令"
+            echo "  [OK] $(get_text 'global_command_success'): $symlink_path"
+            echo "     $(get_text 'target_directory'): $INSTALL_DIR"
+            echo "     $(get_text 'can_use_iptv_anywhere')"
         else
             echo "  [错误] 全局命令创建失败"
             echo "     原因: 可能需要管理员权限"
@@ -640,14 +866,14 @@ EOF
             rm -f "$wrapper_script" 2>/dev/null
         fi
     else
-        echo "  [OK] 跳过软连接创建"
+        echo "  $(get_text 'skip_symlink')"
         echo "     使用方法: cd $INSTALL_DIR && python3 iptv_manager.py"
     fi
 }
 
 # 测试安装
 test_installation() {
-    echo "  [测试] 安装结果..."
+    echo "  $(get_text 'test_install_result')"
     
     # 保存当前目录
     ORIGINAL_DIR=$(pwd)
@@ -656,9 +882,9 @@ test_installation() {
     cd "$INSTALL_DIR"
     
     # 测试脚本语法
-    echo "     检查脚本语法..."
+    echo "     $(get_text 'check_script_syntax')"
     if python3 -m py_compile iptv_manager.py 2>/dev/null; then
-        echo "     [OK] 脚本语法检查通过"
+        echo "     [OK] $(get_text 'script_syntax_ok')"
     else
         echo "     [错误] 脚本语法检查失败"
         cd "$ORIGINAL_DIR"
@@ -666,9 +892,9 @@ test_installation() {
     fi
     
     # 测试配置文件
-    echo "     检查配置文件..."
+    echo "     $(get_text 'check_config_file')"
     if python3 -c "import json; json.load(open('config.json'))" 2>/dev/null; then
-        echo "     [OK] 配置文件格式正确"
+        echo "     [OK] $(get_text 'config_format_ok')"
     else
         echo "     [错误] 配置文件格式错误"
         cd "$ORIGINAL_DIR"
@@ -676,9 +902,9 @@ test_installation() {
     fi
     
     # 测试运行
-    echo "     测试程序运行..."
+    echo "     $(get_text 'test_program_run')"
     if python3 iptv_manager.py --status >/dev/null 2>&1; then
-        echo "     [OK] 程序运行测试通过"
+        echo "     [OK] $(get_text 'program_test_ok')"
     else
         echo "     [OK] 程序基础功能正常（首次运行无数据是正常的）"
     fi
@@ -689,7 +915,7 @@ test_installation() {
 
 # 设置定时任务
 setup_cron() {
-    echo "  [配置] 定时任务..."
+    echo "  $(get_text 'config_cron')"
     
     local choice
     
@@ -700,13 +926,13 @@ setup_cron() {
         
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "定时任务设置"
+        echo "$(get_text 'cron_setup')"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "请选择定时任务频率:"
-        echo "1) 每6小时执行一次 (推荐)"
-        echo "2) 每天凌晨2点执行"
-        echo "3) 每小时执行一次"
-        echo "4) 跳过定时任务设置"
+        echo "$(get_text 'select_cron_frequency')"
+        echo "1) $(get_text 'every_6_hours')"
+        echo "2) $(get_text 'daily_2am')"
+        echo "3) $(get_text 'every_hour')"
+        echo "4) $(get_text 'skip_cron')"
         echo
         echo "提示: 推荐选择选项1，既能保持更新又不会过于频繁"
         echo
@@ -1063,19 +1289,19 @@ main() {
     
     # 安装步骤列表
     local steps=(
-        "check_root:检查用户权限"
-        "select_language:选择语言"
-        "check_script_update:检查脚本更新"
-        "get_user_preferences:获取用户配置"
-        "check_system:检查系统环境"
-        "install_system_deps:安装系统依赖"
-        "download_files:下载项目文件"
-        "install_python_deps:安装Python依赖"
-        "create_directories:创建目录结构"
-        "install_scripts:安装脚本文件"
-        "create_symlink:创建软连接"
-        "test_installation:测试安装"
-        "setup_cron:设置定时任务"
+        "check_root:$(get_text 'step_check_root')"
+        "select_language:$(get_text 'step_select_language')"
+        "check_script_update:$(get_text 'step_check_update')"
+        "get_user_preferences:$(get_text 'step_get_config')"
+        "check_system:$(get_text 'step_check_system')"
+        "install_system_deps:$(get_text 'step_install_deps')"
+        "download_files:$(get_text 'step_download_files')"
+        "install_python_deps:$(get_text 'step_install_python_deps')"
+        "create_directories:$(get_text 'step_create_dirs')"
+        "install_scripts:$(get_text 'step_install_scripts')"
+        "create_symlink:$(get_text 'step_create_symlink')"
+        "test_installation:$(get_text 'step_test_install')"
+        "setup_cron:$(get_text 'step_setup_cron')"
         "run_script:运行脚本"
         "show_completion:显示完成信息"
     )
