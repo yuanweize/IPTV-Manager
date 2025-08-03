@@ -26,7 +26,7 @@ A high-performance IPTV live source automatic download and management script des
 Download and run the installation script with customizable configuration options:
 
 ```bash
-wget https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh
+wget -O install.sh https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -258,6 +258,49 @@ The `config.json` file contains the following main sections:
     "user_agent": "IPTV-Manager/1.0"
   }
 }
+```
+
+## 🧪 Installation Testing
+
+After installation, you can run the test script to verify the installation:
+
+```bash
+# Navigate to installation directory
+cd /opt/IPTV-Manager
+
+# Run test script
+python3 test_installation.py
+```
+
+The test script will check:
+- Python dependencies are correctly installed
+- Configuration file is valid
+- Script can execute properly
+- Directory structure is correct
+- Multi-language support is working
+
+### Using Makefile (Optional)
+
+The project includes a Makefile to simplify common operations:
+
+```bash
+# View all available commands
+make help
+
+# Run installation
+make install
+
+# Run tests
+make test
+
+# Download sources directly
+make download
+
+# Show status
+make status
+
+# Clean temporary files
+make clean
 ```
 
 ## 🔧 Troubleshooting

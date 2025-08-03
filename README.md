@@ -26,7 +26,7 @@
 下载安装脚本后运行，可以自定义所有配置选项：
 
 ```bash
-wget https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh
+wget -O install.sh https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -487,7 +487,50 @@ iptv --help
 - `WARNING`: 警告信息
 - `ERROR`: 错误信息
 
-## 故障排除
+## 🧪 安装测试
+
+安装完成后，可以运行测试脚本验证安装是否成功：
+
+```bash
+# 进入安装目录
+cd /opt/IPTV-Manager
+
+# 运行测试脚本
+python3 test_installation.py
+```
+
+测试脚本会检查：
+- Python依赖包是否正确安装
+- 配置文件是否有效
+- 脚本是否可以正常执行
+- 目录结构是否正确
+- 多语言支持是否工作
+
+### 使用Makefile（可选）
+
+项目包含Makefile来简化常用操作：
+
+```bash
+# 查看所有可用命令
+make help
+
+# 运行安装
+make install
+
+# 运行测试
+make test
+
+# 直接下载源
+make download
+
+# 查看状态
+make status
+
+# 清理临时文件
+make clean
+```
+
+## 🔧 故障排除
 
 ### 常见问题
 

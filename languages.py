@@ -123,6 +123,11 @@ LANG_ZH = {
     "partial_failed": "部分源下载失败",
     "show_status_failed": "显示状态失败",
     
+    # 新增文本
+    "sources": "个源",
+    "status_report_title": "IPTV直播源管理状态报告",
+    "generate_time": "生成时间",
+    
     # 错误相关
     "error": "错误",
     "warning": "警告",
@@ -250,6 +255,11 @@ LANG_EN = {
     "task_error": "Error occurred while executing tasks",
     "partial_failed": "Some sources failed to download",
     "show_status_failed": "Show status failed",
+    
+    # 新增文本
+    "sources": "sources",
+    "status_report_title": "IPTV Live Source Management Status Report",
+    "generate_time": "Generated at",
     
     # 错误相关
     "error": "Error",
