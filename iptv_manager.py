@@ -14,7 +14,7 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 多语言支持 / Multi-language support
 
 作者 / Author: IPTV管理脚本开发专家 / IPTV Management Script Expert
-版本 / Version: 1.0.5
+版本 / Version: 1.0.6
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
@@ -653,9 +653,9 @@ class IPTVManager:
 def show_menu():
     """显示交互式菜单 / Display interactive menu"""
     print("\n" + "="*60)
-    print(f"    {get_text('menu_title')} v{get_current_version()}")
+    print(f"    {get_text('menu_title')}")
     print("="*60)
-    print(f"{get_text('menu_prompt').replace('请输入选项 (0-7):', '请选择要执行的操作:').replace('Enter option (0-7):', 'Please select operation:')}")
+    print(f"{get_text('menu_prompt').replace('请输入选项 (0-8):', '请选择要执行的操作:').replace('Enter option (0-8):', 'Please select operation:')}")
     print()
     print(f"1. {get_text('menu_download')}")
     print(f"2. {get_text('menu_status')}")
@@ -664,8 +664,7 @@ def show_menu():
     print(f"5. {get_text('menu_logs')}")
     print(f"6. {get_text('menu_cleanup')}")
     print(f"7. {get_text('menu_update')}")
-    print(f"8. {get_text('menu_language')}")
-    print(f"9. {get_text('menu_uninstall')}")
+    print(f"8. {get_text('menu_uninstall')}")
     print(f"0. {get_text('menu_exit')}")
     print()
     print("="*60)
@@ -676,7 +675,7 @@ def interactive_mode(manager):
     while True:
         try:
             show_menu()
-            choice = input(f"{get_text('menu_prompt').replace('(0-7)', '(0-8)')} ").strip()
+            choice = input(f"{get_text('menu_prompt')} ").strip()
             
             if choice == '0':
                 print(f"\n{get_text('menu_exit').replace('[退出] ', '[').replace('[Exit] ', '[')} {get_text('exit_message')}")
@@ -1014,7 +1013,7 @@ def cleanup_files(manager):
 
 def get_current_version():
     """获取当前版本号 / Get current version"""
-    return "1.0.5"
+    return "1.0.6"
 
 def get_remote_version():
     """获取远程版本号 / Get remote version"""
@@ -1310,7 +1309,7 @@ def main():
     parser.add_argument(
         '--version', 
         action='version', 
-        version='IPTV Manager 1.0.5'
+        version='IPTV Manager 1.0.6'
     )
     
     args = parser.parse_args()

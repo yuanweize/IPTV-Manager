@@ -313,7 +313,7 @@ download_files() {
     echo "     临时目录: $TEMP_DIR"
     
     # 下载文件列表
-    local files=("iptv_manager.py" "config.json" "requirements.txt")
+    local files=("iptv_manager.py" "languages.py" "config.json" "requirements.txt")
     local total_files=${#files[@]}
     local current_file=0
     
