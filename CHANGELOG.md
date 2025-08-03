@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.9] - 2025-08-03
+## [2.0.5] - 2025-08-03
 
 ### Fixed
 - 🐛 **CRITICAL**: Fixed languages.py file not being copied during installation
@@ -19,6 +19,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - 📦 Updated installation script to properly copy all downloaded files
 - 🔢 Incremented version number to 1.0.8
+
+## [2.0.5] - 2025-08-03
+
+### Added
+- 🔄 Script update checking functionality in installation script
+- 📅 Development date display in script title and help information
+- 🌐 Complete multilingual support for installation script interface
+- 🔧 Automatic script version comparison with remote repository
+
+### Fixed
+- 🌐 **CRITICAL**: Fixed installation script showing Chinese text when English was selected
+- 📋 All installation prompts now properly respect language selection
+- 🔧 Installation path, data directory, and post-install options now fully localized
+
+### Changed
+- 🔢 Incremented version number to 2.0.5
+- 📅 Added script development date (2025-08-03) to installer title
+- 🌐 Enhanced installation script with comprehensive English translations
+- 🔄 Added script auto-update capability before installation
+
+### Technical
+- 🔧 Added get_text() function for installation script localization
+- 📅 Added SCRIPT_VERSION and SCRIPT_DATE variables
+- 🔄 Implemented check_script_update() function
+- 🌐 Updated all user-facing installation messages to support both languages
 
 ## [2.0.4] - 2025-08-03
 
