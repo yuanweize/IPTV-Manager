@@ -13,7 +13,7 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 兼容crontab定时执行 / Compatible with crontab scheduled execution
 - 多语言支持 / Multi-language support
 
-版本 / Version: 2.0.7
+版本 / Version: 2.0.8
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
@@ -146,12 +146,12 @@ class IPTVConfig:
                 language = self.config.get('language', 'zh')
                 set_language(language)
                 
-                logging.info(f"Configuration loaded successfully / 配置文件加载成功: {self.config_path}")
+                logging.info(f"{get_text('config_load_success')}: {self.config_path}")
             except Exception as e:
-                logging.warning(f"Configuration load failed, using default / 配置文件加载失败，使用默认配置: {e}")
+                logging.warning(f"{get_text('config_load_fail')}: {e}")
         else:
             self._save_config()
-            logging.info("Default configuration file created / 创建默认配置文件")
+            logging.info(get_text('config_create_default'))
     
     def _merge_config(self, default: Dict, user: Dict):
         """递归合并配置"""
@@ -409,7 +409,7 @@ class IPTVDownloader:
         
         lines = content.strip().split('\n')
         if not lines[0].strip().startswith('#EXTM3U'):
-            logging.warning("M3U file missing #EXTM3U header, but continuing processing")
+            logging.warning(get_text('m3u_missing_header'))
         
         # 检查是否包含频道信息
         has_extinf = any(line.strip().startswith('#EXTINF:') for line in lines)
@@ -440,7 +440,7 @@ class IPTVDownloader:
         """
         sources = self.config.get_sources()
         if not sources:
-            logging.warning("No enabled live sources" if get_text('language') == 'en' else "没有启用的直播源")
+            logging.warning(get_text('no_enabled_sources'))
             return {}
         
         logging.info(f"Starting download of {len(sources)} live sources" if get_text('language') == 'en' else f"开始下载 {len(sources)} 个直播源")
@@ -463,7 +463,7 @@ class IPTVDownloader:
                     results[source_id] = (success, error_msg)
                 except Exception as e:
                     error_msg = f"任务执行异常: {e}"
-                    logging.error(f"源 {source_id} 下载任务异常: {error_msg}")
+                    logging.error(f"{get_text('source_download_error', source_id)}: {error_msg}")
                     results[source_id] = (False, error_msg)
         
         # 统计结果
@@ -1025,7 +1025,7 @@ def cleanup_files(manager):
 
 def get_current_version():
     """获取当前版本号 / Get current version"""
-    return "2.0.7"
+    return "2.0.8"
 
 def get_remote_version():
     """获取远程版本号 / Get remote version"""
@@ -1364,7 +1364,7 @@ def main():
     parser.add_argument(
         '--version', 
         action='version', 
-        version='IPTV Manager 2.0.7'
+        version='IPTV Manager 2.0.8'
     )
     
     args = parser.parse_args()

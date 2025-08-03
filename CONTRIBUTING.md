@@ -1,15 +1,20 @@
-# Contributing to IPTV Manager
+# Contributing to IPTV Manager / 贡献指南
 
 Thank you for your interest in contributing to IPTV Manager! We welcome contributions from everyone.
+感谢您对 IPTV Manager 项目的贡献感兴趣！我们欢迎所有人的贡献。
 
-## 🤝 How to Contribute
+## 🤝 How to Contribute / 如何贡献
 
-### Reporting Bugs
+### Reporting Bugs / 报告错误
 
-Before creating bug reports, please check the existing issues to avoid duplicates. When you create a bug report, please include as many details as possible:
+Before creating bug reports, please check the existing issues to avoid duplicates.
+在提交错误报告前，请检查现有问题以避免重复。 When you create a bug report, please include as many details as possible:
+提交错误报告时，请尽可能包含以下详细信息：
 
 - **Use a clear and descriptive title**
+  **使用清晰且描述性的标题**
 - **Describe the exact steps to reproduce the problem**
+  **描述重现问题的具体步骤**
 - **Provide specific examples to demonstrate the steps**
 - **Describe the behavior you observed and what behavior you expected**
 - **Include screenshots if applicable**

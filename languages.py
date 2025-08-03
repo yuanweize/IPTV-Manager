@@ -454,6 +454,15 @@ lang_manager = LanguageManager()
 
 def get_text(key, *args, **kwargs):
     """
+    Newly added text keys for logging:
+    - 'config_load_success': 'Configuration loaded successfully'
+    - 'config_load_fail': 'Configuration load failed, using default'
+    - 'config_create_default': 'Default configuration file created'
+    - 'm3u_missing_header': 'M3U file missing #EXTM3U header, but continuing processing'
+    - 'source_download_error': 'Source {0} download task exception'
+    - 'no_enabled_sources': 'No enabled live sources'
+    """
+    """
     获取翻译文本的便捷函数
     
     Args:

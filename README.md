@@ -644,7 +644,7 @@ tail -f /opt/IPTV-Manager/logs/iptv_manager_$(date +%Y%m%d).log
 
 ## 版本信息
 
-- **版本**: 2.0.7
+- **版本**: 2.0.8
 - **适用环境**: Debian/Ubuntu服务器
 - **Python要求**: 3.6+
 
