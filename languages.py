@@ -185,6 +185,12 @@ LANG_ZH = {
     "update_no_new": "已是最新版本",
     "update_cancelled": "更新已取消",
     
+    # 卸载相关
+    "uninstall_warning": "此操作将完全删除 IPTV 管理系统及其所有数据！",
+    "uninstall_warning_details": "包括：程序文件、配置文件、直播源文件、备份文件、日志文件",
+    "uninstall_confirm1": "确认要卸载吗？输入 'yes' 继续，其他任意键取消",
+    "uninstall_confirm2": "最后确认：输入 'DELETE' 开始卸载",
+    
     # 语言切换相关
     "language": "语言",
     "current": "当前",

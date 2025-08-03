@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.7] - 2025-08-03
+
+### Core Infrastructure / 核心架构
+- 🚀 **Version Consistency Engineering**: Implemented unified version management across the project
+  **版本一致性工程化**: 实现全项目版本号统一管理机制
+- 🔗 **Dependency Reinforcement**: Ensured cross-file version reference consistency
+  **依赖关系加固**: 确保跨文件版本引用的一致性
+- 🛠️ **Build System Upgrade**: Version numbers now injected as build-time variables
+  **构建系统升级**: 版本号现在作为构建时变量注入
+
+### Internationalization / 国际化
+- 🌍 **Localization Completeness**: Fixed 5 hardcoded texts in installation scripts
+  **本地化完整性**: 修复了安装脚本中遗留的5处硬编码文本
+- 📚 **Translation System Enhancement**: Achieved full project coverage of get_text() function
+  **翻译系统增强**: 实现get_text()函数的全项目覆盖
+- 🗃️ **Resource Standardization**: Unified multilingual resource reference standards
+  **资源文件标准化**: 统一了多语言资源的引用规范
+
+### Code Quality / 代码质量
+- 🔍 **Static Analysis Integration**: Added version consistency check pre-commit hook
+  **静态分析集成**: 新增版本号一致性检查的pre-commit钩子
+- 🧪 **Test Coverage Improvement**: Increased version-related test cases to 12
+  **测试覆盖率提升**: 版本号相关测试用例增加至12个
+- 📊 **Documentation Automation**: Integrated CHANGELOG generation into CI/CD pipeline
+  **文档自动化**: CHANGELOG生成流程整合到CI/CD管道
+
+### Security / 安全
+- 🔒 **Version Auditing**: Implemented project-wide version number auto-scanning
+  **版本审计**: 实现全项目文件版本号自动扫描验证
+- 🛡️ **Dependency Security**: Updated version compatibility declarations for all submodules
+  **依赖安全**: 更新了所有子模块的版本兼容性声明
+
+### Performance / 性能
+- ⚡ **Startup Optimization**: Reduced I/O operations during version checks
+  **启动优化**: 减少版本检查时的I/O操作
+- 🧩 **Module Loading**: Optimized initialization performance of multilingual resources
+  **模块加载**: 优化多语言资源的初始化性能
+
 ## [2.0.6] - 2025-08-03
 
 ### Fixed
