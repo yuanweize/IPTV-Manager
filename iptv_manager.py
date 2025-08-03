@@ -13,7 +13,6 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 兼容crontab定时执行 / Compatible with crontab scheduled execution
 - 多语言支持 / Multi-language support
 
-作者 / Author: IPTV管理脚本开发专家 / IPTV Management Script Expert
 版本 / Version: 2.0.4
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
@@ -659,7 +658,6 @@ def show_menu():
     # 显示项目信息
     print(f"    {get_text('project_description')}")
     print(f"    {get_text('project_url')}: https://github.com/yuanweize/IPTV-Manager")
-    print(f"    {get_text('project_author')}: IPTV Manager Team")
     print("="*70)
     
     print(f"{get_text('menu_prompt').replace('请输入选项 (0-9):', '请选择要执行的操作:').replace('Enter option (0-9):', 'Please select operation:')}")
