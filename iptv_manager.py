@@ -14,7 +14,7 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 多语言支持 / Multi-language support
 
 作者 / Author: IPTV管理脚本开发专家 / IPTV Management Script Expert
-版本 / Version: 1.0.6
+版本 / Version: 1.0.7
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
@@ -664,7 +664,8 @@ def show_menu():
     print(f"5. {get_text('menu_logs')}")
     print(f"6. {get_text('menu_cleanup')}")
     print(f"7. {get_text('menu_update')}")
-    print(f"8. {get_text('menu_uninstall')}")
+    print(f"8. {get_text('menu_language')}")
+    print(f"9. {get_text('menu_uninstall')}")
     print(f"0. {get_text('menu_exit')}")
     print()
     print("="*60)
@@ -728,6 +729,12 @@ def interactive_mode(manager):
                 input(f"\n{get_text('continue_prompt')}")
                 
             elif choice == '8':
+                print(f"\n{get_text('menu_language').replace('[语言] ', '[').replace('[Language] ', '[')} {get_text('language_switch')}")
+                print("-" * 50)
+                switch_language(manager)
+                input(f"\n{get_text('continue_prompt')}")
+                
+            elif choice == '9':
                 print(f"\n{get_text('menu_uninstall').replace('[卸载] ', '[').replace('[Uninstall] ', '[')} {get_text('uninstall_program')}")
                 print("-" * 50)
                 if uninstall_program(manager):
@@ -738,7 +745,7 @@ def interactive_mode(manager):
                 input(f"\n{get_text('continue_prompt')}")
                 
             else:
-                print(f"\n[{get_text('error')}] {get_text('invalid_option').replace('0-7', '0-8')}")
+                print(f"\n[{get_text('error')}] {get_text('invalid_option')}")
                 input(f"{get_text('continue_prompt')}")
                 
         except KeyboardInterrupt:
@@ -1013,7 +1020,7 @@ def cleanup_files(manager):
 
 def get_current_version():
     """获取当前版本号 / Get current version"""
-    return "1.0.6"
+    return "1.0.7"
 
 def get_remote_version():
     """获取远程版本号 / Get remote version"""
@@ -1140,6 +1147,47 @@ def update_program(manager):
         print(f"[{get_text('error')}] {get_text('update_failed')}: {e}")
 
 
+def switch_language(manager):
+    """切换语言 / Switch language"""
+    try:
+        current_lang = manager.config.config.get('language', 'zh')
+        
+        print(f"{get_text('language_select')}:")
+        print("1. 中文 (Chinese)")
+        print("2. English")
+        print(f"{get_text('current')}: {'中文' if current_lang == 'zh' else 'English'}")
+        print()
+        
+        choice = input("Enter choice (1-2) / 输入选择 (1-2): ").strip()
+        
+        if choice == '1':
+            new_lang = 'zh'
+            lang_name = '中文'
+        elif choice == '2':
+            new_lang = 'en'
+            lang_name = 'English'
+        else:
+            print(f"[{get_text('error')}] Invalid choice / 无效选择")
+            return
+        
+        if new_lang == current_lang:
+            print(f"[{get_text('info')}] Language unchanged / 语言未改变")
+            return
+        
+        # 更新配置文件
+        manager.config.config['language'] = new_lang
+        manager.config._save_config()
+        
+        # 设置新语言
+        set_language(new_lang)
+        
+        print(f"[{get_text('info')}] Language switched to {lang_name} / 语言已切换到{lang_name}")
+        print(f"[{get_text('info')}] {get_text('update_success').replace('请重新启动程序', '').replace('Please restart the program', '')}")
+        
+    except Exception as e:
+        print(f"[{get_text('error')}] Language switch failed / 语言切换失败: {e}")
+
+
 def uninstall_program(manager):
     """卸载程序"""
     try:
@@ -1219,7 +1267,9 @@ def uninstall_program(manager):
                 if len(filtered_lines) != len(lines):
                     # 有变化，更新crontab
                     if filtered_lines and filtered_lines != ['']:
-                        subprocess.run(['crontab', '-'], input='\n'.join(filtered_lines), text=True)
+                        # 确保最后有换行符
+                        cron_content = '\n'.join(filtered_lines) + '\n'
+                        subprocess.run(['crontab', '-'], input=cron_content, text=True)
                     else:
                         subprocess.run(['crontab', '-r'], capture_output=True)
                     print("[卸载] 定时任务已删除")
@@ -1309,12 +1359,25 @@ def main():
     parser.add_argument(
         '--version', 
         action='version', 
-        version='IPTV Manager 1.0.6'
+        version='IPTV Manager 1.0.7'
     )
     
     args = parser.parse_args()
     
     try:
+        # 预先加载语言设置
+        if os.path.exists(args.config):
+            try:
+                import json
+                with open(args.config, 'r', encoding='utf-8') as f:
+                    config_data = json.load(f)
+                language = config_data.get('language', 'zh')
+                set_language(language)
+            except Exception:
+                set_language('zh')  # 默认中文
+        else:
+            set_language('zh')  # 默认中文
+        
         manager = IPTVManager(args.config)
         
         if args.download:

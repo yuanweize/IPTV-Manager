@@ -714,7 +714,7 @@ run_script() {
         
         # 在后台运行下载任务
         local log_file="/tmp/iptv_install_output_$$.log"
-        python3 iptv_manager.py > "$log_file" 2>&1 &
+        timeout 120 python3 iptv_manager.py --download > "$log_file" 2>&1 &
         local download_pid=$!
         
         # 显示进度动画（使用ASCII字符）
@@ -722,16 +722,29 @@ run_script() {
         local i=0
         echo "     正在下载直播源文件..."
         
-        while kill -0 $download_pid 2>/dev/null; do
+        local timeout_count=0
+        local max_timeout=400  # 120秒超时 (400 * 0.3秒)
+        
+        while kill -0 $download_pid 2>/dev/null && [ $timeout_count -lt $max_timeout ]; do
             local char=${spinner_chars:$((i % ${#spinner_chars})):1}
-            printf "\r     %s 下载中... (如长时间无响应，请按 Ctrl+C 中断)" "$char"
+            printf "\r     %s 下载中... (超时倒计时: %d秒)" "$char" $(((max_timeout - timeout_count) * 3 / 10))
             sleep 0.3
             i=$((i + 1))
+            timeout_count=$((timeout_count + 1))
         done
         
-        # 等待进程完成并获取退出状态
-        wait $download_pid
-        local exit_code=$?
+        # 检查是否超时
+        if [ $timeout_count -ge $max_timeout ]; then
+            kill $download_pid 2>/dev/null
+            printf "\r%*s\r" 70 ""
+            echo "     [超时] 下载超时，但这不影响安装"
+            echo "     [提示] 您可以稍后手动运行 'iptv --download' 重试"
+            local exit_code=124  # timeout exit code
+        else
+            # 等待进程完成并获取退出状态
+            wait $download_pid
+            local exit_code=$?
+        fi
         
         printf "\r%*s\r" 70 ""  # 清除进度行
         
@@ -750,6 +763,13 @@ run_script() {
                 fi
                 rm -f "$log_file"
             fi
+        elif [ $exit_code -eq 124 ]; then
+            echo "     [提示] 安装完成，但初始下载超时"
+            echo "     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "     这是正常现象，不影响程序功能"
+            echo "     解决方案:"
+            echo "       • 稍后使用 'iptv --download' 手动下载"
+            echo "       • 或运行 'iptv' 进入交互式菜单选择下载"
         else
             echo "     [错误] 直播源下载遇到问题"
             echo "     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -759,7 +779,7 @@ run_script() {
             echo "       • 防火墙阻止了连接"
             echo
             echo "     解决方案:"
-            echo "       • 稍后使用 'iptv' 命令重试"
+            echo "       • 稍后使用 'iptv --download' 命令重试"
             echo "       • 检查网络连接: ping google.com"
             echo "       • 查看详细日志: tail -f $INSTALL_DIR/logs/iptv_manager_$(date +%Y%m%d).log"
             
