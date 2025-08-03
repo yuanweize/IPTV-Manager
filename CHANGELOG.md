@@ -5,15 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2025-08-03
+
+### Fixed
+- � P**CRITICAL**: Fixed missing languages.py file in installation script
+- 🌐 Fixed language loading issue causing menu to display text keys instead of translations
+- � Correlcted menu option count (removed extra language option)
+- �  Fixed menu display showing raw text keys instead of localized text
+
+### Changed
+- 📦 Updated installation script to include languages.py file download
+- 🔢 Incremented version number to 1.0.6
+
 ## [1.0.5] - 2025-08-03
 
 ### Added
 - 🔄 Program update functionality in interactive menu (option 7)
 - 🌐 Automatic version checking from GitHub releases API
-- 🔧 One-click update feature with environment preservation
+- �  One-click update feature with environment preservation
 - 📋 Update status messages in both languages (12 new text keys)
 - 🧪 Update function test script (test_update_function.py)
-- 📊 Comprehensive project status check script (project_status.py)
+- � Comrprehensive project status check script (project_status.py)
 
 ### Fixed
 - 🐛 Fixed syntax error in main() function definition
