@@ -5,13 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2025-08-03
+
+### Added
+- 🌐 Language switching functionality in interactive menu (option 8)
+- ⏰ Download timeout handling in installation script
+- 🔧 Pre-loading of language settings in main function
+
+### Fixed
+- 🐛 Fixed crontab deletion error (missing newline before EOF)
+- 🌐 Fixed language loading issue by pre-loading settings before IPTVManager initialization
+- 📋 Fixed menu option numbering (now 0-9 with language switch)
+- ⏰ Fixed installation hanging on download timeout with proper error handling
+
+### Changed
+- 📋 Updated menu to include language switching option
+- 🔢 Incremented version number to 1.0.7
+- ⏰ Improved installation script timeout and error handling
+
 ## [1.0.6] - 2025-08-03
 
 ### Fixed
-- � P**CRITICAL**: Fixed missing languages.py file in installation script
+- 🐛 **CRITICAL**: Fixed missing languages.py file in installation script
 - 🌐 Fixed language loading issue causing menu to display text keys instead of translations
-- � Correlcted menu option count (removed extra language option)
-- �  Fixed menu display showing raw text keys instead of localized text
+- 📋 Corrected menu option count (removed extra language option)
+- 🔧 Fixed menu display showing raw text keys instead of localized text
 
 ### Changed
 - 📦 Updated installation script to include languages.py file download
@@ -22,10 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 🔄 Program update functionality in interactive menu (option 7)
 - 🌐 Automatic version checking from GitHub releases API
-- �  One-click update feature with environment preservation
+- 🔧 One-click update feature with environment preservation
 - 📋 Update status messages in both languages (12 new text keys)
 - 🧪 Update function test script (test_update_function.py)
-- � Comrprehensive project status check script (project_status.py)
+- 📊 Comprehensive project status check script (project_status.py)
 
 ### Fixed
 - 🐛 Fixed syntax error in main() function definition

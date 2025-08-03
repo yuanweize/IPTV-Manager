@@ -18,7 +18,7 @@ LANG_ZH = {
     "menu_update": "[更新] 更新程序",
     "menu_uninstall": "[卸载] 卸载程序",
     "menu_exit": "[退出] 退出程序",
-    "menu_prompt": "请输入选项 (0-8):",
+    "menu_prompt": "请输入选项 (0-9):",
     
     # 操作消息
     "download_start": "开始下载/更新直播源...",
@@ -33,7 +33,7 @@ LANG_ZH = {
     "uninstall_program": "卸载程序",
     "exit_message": "感谢使用 IPTV 管理系统，再见！",
     "continue_prompt": "按回车键继续...",
-    "invalid_option": "无效选项，请输入 0-8 之间的数字",
+    "invalid_option": "无效选项，请输入 0-9 之间的数字",
     "operation_failed": "操作失败",
     "user_interrupt": "用户中断，退出程序",
     
@@ -177,7 +177,7 @@ LANG_EN = {
     "menu_update": "[Update] Update program",
     "menu_uninstall": "[Uninstall] Uninstall program",
     "menu_exit": "[Exit] Exit program",
-    "menu_prompt": "Enter option (0-8):",
+    "menu_prompt": "Enter option (0-9):",
     
     # 操作消息
     "download_start": "Starting download/update of live sources...",
@@ -192,7 +192,7 @@ LANG_EN = {
     "uninstall_program": "Uninstall Program",
     "exit_message": "Thank you for using IPTV Manager, goodbye!",
     "continue_prompt": "Press Enter to continue...",
-    "invalid_option": "Invalid option, please enter a number between 0-8",
+    "invalid_option": "Invalid option, please enter a number between 0-9",
     "operation_failed": "Operation failed",
     "user_interrupt": "User interrupt, exiting program",
     
