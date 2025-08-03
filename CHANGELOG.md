@@ -8,22 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.5] - 2025-08-03
 
 ### Added
-- 🔄 Program update functionality in interactive menu
-- �  Automatic version checking from GitHub releases
-- � EOne-click update feature with environment preservation
-- � LUpdate status messages in both languages
+- 🔄 Program update functionality in interactive menu (option 7)
+- 🌐 Automatic version checking from GitHub releases API
+- 🔧 One-click update feature with environment preservation
+- 📋 Update status messages in both languages (12 new text keys)
+- 🧪 Update function test script (test_update_function.py)
+- 📊 Comprehensive project status check script (project_status.py)
 
 ### Fixed
-- � Fixed Lsyntax error in main() function definition
+- 🐛 Fixed syntax error in main() function definition
 - 🔧 Resolved duplicate function definition issue
-- 📝 Corrected menu option numbering (0-8)
+- 📝 Corrected menu option numbering from (0-7) to (0-8)
+- 🔧 Fixed menu prompt text consistency
+
+### Changed
+- 📋 Updated interactive menu to include update option
+- 🌐 Enhanced language support with update-related texts
+- 📚 Updated documentation with update functionality instructions
+- 🔢 Incremented version number to 1.0.5 across all files
 
 ## [1.0.4] - 2025-08-03
 
 ### Added
 - 🌐 Multi-language support (Chinese/English)
 - 🎨 GitHub-style README with badges and better formatting
-- �  English README (README_EN.md)
+- 📝 English README (README_EN.md)
 - 🔧 Language selection during installation
 - 📋 MIT License
 - 📁 .gitignore file
@@ -63,7 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🔧 Resolved permission problems
 - 📁 Fixed directory creation logic
 
-## [1.0.2] - 2024-01-10
+## [1.0.2] - 2025-01-10
 
 ### Added
 - 🎯 Multi-source concurrent downloads
@@ -76,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📝 Improved documentation
 - 🔧 Enhanced error handling
 
-## [1.0.1] - 2024-01-05
+## [1.0.1] - 2025-01-05
 
 ### Added
 - 📦 Basic IPTV source download functionality
@@ -87,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🐛 Initial bug fixes
 - 🔧 Improved stability
 
-## [1.0.0] - 2024-01-01
+## [1.0.0] - 2025-01-01
 
 ### Added
 - 🎉 Initial release

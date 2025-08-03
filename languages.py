@@ -151,6 +151,17 @@ LANG_ZH = {
     "update_failed": "更新失败",
     "update_no_new": "已是最新版本",
     "update_cancelled": "更新已取消",
+    
+    # 语言切换相关
+    "language": "语言",
+    "current": "当前",
+    "menu_language": "[语言] 切换语言",
+    "language_switch": "语言切换",
+    "language_select": "请选择语言",
+    "language_chinese": "中文",
+    "language_english": "English",
+    "language_switched": "语言已切换",
+    "language_restart": "请重新启动程序以完全应用语言设置",
 }
 
 # 英文语言包
@@ -299,6 +310,17 @@ LANG_EN = {
     "update_failed": "Update failed",
     "update_no_new": "Already up to date",
     "update_cancelled": "Update cancelled",
+    
+    # 语言切换相关
+    "language": "Language",
+    "current": "Current",
+    "menu_language": "[Language] Switch Language",
+    "language_switch": "Language Switch",
+    "language_select": "Please select language",
+    "language_chinese": "中文",
+    "language_english": "English",
+    "language_switched": "Language switched",
+    "language_restart": "Please restart the program to fully apply language settings",
 }
 
 # 语言映射

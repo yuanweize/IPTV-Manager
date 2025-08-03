@@ -147,12 +147,12 @@ class IPTVConfig:
                 language = self.config.get('language', 'zh')
                 set_language(language)
                 
-                logging.info(f"{get_text('config_loaded')}: {self.config_path}")
+                logging.info(f"Configuration loaded successfully / 配置文件加载成功: {self.config_path}")
             except Exception as e:
-                logging.warning(f"{get_text('config_load_failed')}: {e}")
+                logging.warning(f"Configuration load failed, using default / 配置文件加载失败，使用默认配置: {e}")
         else:
             self._save_config()
-            logging.info(get_text('config_created'))
+            logging.info("Default configuration file created / 创建默认配置文件")
     
     def _merge_config(self, default: Dict, user: Dict):
         """递归合并配置"""
@@ -653,7 +653,7 @@ class IPTVManager:
 def show_menu():
     """显示交互式菜单 / Display interactive menu"""
     print("\n" + "="*60)
-    print(f"    {get_text('menu_title')}")
+    print(f"    {get_text('menu_title')} v{get_current_version()}")
     print("="*60)
     print(f"{get_text('menu_prompt').replace('请输入选项 (0-7):', '请选择要执行的操作:').replace('Enter option (0-7):', 'Please select operation:')}")
     print()
@@ -664,7 +664,8 @@ def show_menu():
     print(f"5. {get_text('menu_logs')}")
     print(f"6. {get_text('menu_cleanup')}")
     print(f"7. {get_text('menu_update')}")
-    print(f"8. {get_text('menu_uninstall')}")
+    print(f"8. {get_text('menu_language')}")
+    print(f"9. {get_text('menu_uninstall')}")
     print(f"0. {get_text('menu_exit')}")
     print()
     print("="*60)
@@ -817,7 +818,14 @@ def show_config_info(manager):
     """显示配置信息"""
     try:
         config = manager.config
-        print("[配置] 当前配置信息:")
+        print(f"[{get_text('config_current').split(' ')[0]}] {get_text('config_current')}:")
+        print()
+        
+        # 语言设置
+        current_language = config.config.get('language', 'zh')
+        language_name = "中文" if current_language == 'zh' else "English"
+        print(f"[{get_text('language') if get_text('language') != 'language' else '语言'}] {get_text('language') if get_text('language') != 'language' else '界面语言'}:")
+        print(f"   {get_text('current') if get_text('current') != 'current' else '当前'}: {language_name} ({current_language})")
         print()
         
         # 目录配置
@@ -1004,84 +1012,126 @@ def cleanup_files(manager):
         print(f"[错误] 清理失败: {e}")
 
 
+def get_current_version():
+    """获取当前版本号 / Get current version"""
+    return "1.0.5"
+
+def get_remote_version():
+    """获取远程版本号 / Get remote version"""
+    import urllib.request
+    import re
+    
+    try:
+        # 从GitHub获取最新的iptv_manager.py文件
+        url = "https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/iptv_manager.py"
+        with urllib.request.urlopen(url, timeout=10) as response:
+            content = response.read().decode('utf-8')
+            
+        # 使用正则表达式提取版本号
+        version_pattern = r'版本 / Version: (\d+\.\d+\.\d+)'
+        match = re.search(version_pattern, content)
+        
+        if match:
+            return match.group(1)
+        else:
+            # 备用方案：查找其他版本标识
+            version_pattern2 = r'version=\'IPTV Manager (\d+\.\d+\.\d+)\''
+            match2 = re.search(version_pattern2, content)
+            if match2:
+                return match2.group(1)
+                
+        return None
+    except Exception as e:
+        print(f"Error getting remote version: {e}")
+        return None
+
+def compare_versions(version1, version2):
+    """比较版本号 / Compare versions"""
+    def version_tuple(v):
+        return tuple(map(int, (v.split("."))))
+    
+    return version_tuple(version1) < version_tuple(version2)
+
 def update_program(manager):
     """更新程序 / Update program"""
     try:
         import subprocess
         import tempfile
-        import urllib.request
         
         print(f"{get_text('update_checking')}")
         
-        # GitHub API URL for latest release
-        api_url = "https://api.github.com/repos/yuanweize/IPTV-Manager/releases/latest"
+        # 获取当前版本和远程版本
+        current_version = get_current_version()
+        remote_version = get_remote_version()
+        
+        if remote_version is None:
+            print(f"[{get_text('error')}] {get_text('update_failed')}: Unable to check remote version")
+            print(f"[{get_text('info')}] You can manually update by running:")
+            print("curl -fsSL https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh | bash")
+            return
+        
+        print(f"{get_text('update_current')}: {current_version}")
+        print(f"{get_text('update_latest')}: {remote_version}")
+        
+        # 比较版本号
+        if not compare_versions(current_version, remote_version):
+            print(f"[{get_text('info')}] {get_text('update_no_new')}")
+            return
+        
+        print(f"\n[{get_text('info')}] {get_text('update_available')}")
+        confirm = input(f"{get_text('update_confirm')} (Y/n): ").strip().lower()
+        
+        if confirm not in ['y', 'yes', '']:
+            print(f"[{get_text('info')}] {get_text('update_cancelled')}")
+            return
+        
+        # 下载最新的安装脚本
+        print(f"{get_text('update_downloading')}")
         
         try:
-            # 获取最新版本信息
-            with urllib.request.urlopen(api_url, timeout=10) as response:
-                import json
-                release_data = json.loads(response.read().decode())
-                latest_version = release_data['tag_name'].lstrip('v')
-                current_version = "1.0.5"
-                
-                print(f"{get_text('update_current')}: {current_version}")
-                print(f"{get_text('update_latest')}: {latest_version}")
-                
-                if latest_version <= current_version:
-                    print(f"[{get_text('info')}] {get_text('update_no_new')}")
-                    return
-                
-                print(f"\n[{get_text('info')}] {get_text('update_available')}")
-                confirm = input(f"{get_text('update_confirm')} (Y/n): ").strip().lower()
-                
-                if confirm not in ['y', 'yes', '']:
-                    print(f"[{get_text('info')}] {get_text('update_cancelled')}")
-                    return
-                
-                # 下载最新的安装脚本
-                print(f"{get_text('update_downloading')}")
-                install_script_url = "https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh"
-                
-                with tempfile.NamedTemporaryFile(mode='w+b', suffix='.sh', delete=False) as temp_file:
-                    with urllib.request.urlopen(install_script_url, timeout=30) as script_response:
-                        temp_file.write(script_response.read())
-                    temp_script_path = temp_file.name
-                
-                # 设置执行权限
-                os.chmod(temp_script_path, 0o755)
-                
-                print(f"{get_text('update_installing')}")
-                
-                # 获取当前配置
-                current_config = manager.config.config
-                install_dir = current_config['directories']['base_dir']
-                data_dir = current_config['directories']['data_dir']
-                language = current_config.get('language', 'zh')
-                
-                # 设置环境变量进行更新安装
-                env = os.environ.copy()
-                env.update({
-                    'SKIP_INTERACTIVE': 'true',
-                    'INSTALL_LANGUAGE': language,
-                    'CUSTOM_INSTALL_DIR': install_dir,
-                    'CUSTOM_DATA_DIR': data_dir,
-                    'AUTO_RUN': 'n',
-                    'CREATE_SYMLINK': 'Y'
-                })
-                
-                # 执行更新安装
-                result = subprocess.run(['bash', temp_script_path], env=env, capture_output=True, text=True)
-                
-                # 清理临时文件
-                os.unlink(temp_script_path)
-                
-                if result.returncode == 0:
-                    print(f"\n[{get_text('info')}] {get_text('update_success')}")
-                else:
-                    print(f"\n[{get_text('error')}] {get_text('update_failed')}")
-                    if result.stderr:
-                        print(f"Error details: {result.stderr}")
-                
+            import urllib.request
+            install_script_url = "https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh"
+            
+            with tempfile.NamedTemporaryFile(mode='w+b', suffix='.sh', delete=False) as temp_file:
+                with urllib.request.urlopen(install_script_url, timeout=30) as script_response:
+                    temp_file.write(script_response.read())
+                temp_script_path = temp_file.name
+            
+            # 设置执行权限
+            os.chmod(temp_script_path, 0o755)
+            
+            print(f"{get_text('update_installing')}")
+            
+            # 获取当前配置
+            current_config = manager.config.config
+            install_dir = current_config['directories']['base_dir']
+            data_dir = current_config['directories']['data_dir']
+            language = current_config.get('language', 'zh')
+            
+            # 设置环境变量进行更新安装
+            env = os.environ.copy()
+            env.update({
+                'SKIP_INTERACTIVE': 'true',
+                'INSTALL_LANGUAGE': language,
+                'CUSTOM_INSTALL_DIR': install_dir,
+                'CUSTOM_DATA_DIR': data_dir,
+                'AUTO_RUN': 'n',
+                'CREATE_SYMLINK': 'Y'
+            })
+            
+            # 执行更新安装
+            result = subprocess.run(['bash', temp_script_path], env=env, capture_output=True, text=True)
+            
+            # 清理临时文件
+            os.unlink(temp_script_path)
+            
+            if result.returncode == 0:
+                print(f"\n[{get_text('info')}] {get_text('update_success')}")
+            else:
+                print(f"\n[{get_text('error')}] {get_text('update_failed')}")
+                if result.stderr:
+                    print(f"Error details: {result.stderr}")
+                    
         except Exception as e:
             print(f"[{get_text('error')}] {get_text('update_failed')}: {e}")
             print(f"[{get_text('info')}] You can manually update by running:")
@@ -1227,44 +1277,6 @@ def uninstall_program(manager):
     except Exception as e:
         print(f"[错误] 卸载失败: {e}")
         return False
-
-
-def main():
-    """主函数"""
-    import argparse
-    
-    parser = argparse.ArgumentParser(description='IPTV直播源管理脚本')
-    parser.add_argument('--config', '-c', default='config.json', help='配置文件路径')
-    parser.add_argument('--status', '-s', action='store_true', help='显示当前状态')
-    parser.add_argument('--download', '-d', action='store_true', help='直接下载模式（跳过菜单）')
-    parser.add_argument('--version', '-v', action='version', version='IPTV Manager 1.0.0')
-    
-    args = parser.parse_args()
-    
-    try:
-        manager = IPTVManager(args.config)
-        
-        if args.status:
-            manager.show_status()
-            return 0
-        elif args.download:
-            # 直接下载模式，用于cron任务
-            return manager.run()
-        else:
-            # 检查是否在终端中运行
-            if sys.stdin.isatty() and sys.stdout.isatty():
-                # 交互模式
-                return interactive_mode(manager)
-            else:
-                # 非交互模式（如cron），直接下载
-                return manager.run()
-            
-    except KeyboardInterrupt:
-        print("\n用户中断执行")
-        return 130
-    except Exception as e:
-        print(f"程序执行失败: {e}")
-        return 1
 
 
 def main():

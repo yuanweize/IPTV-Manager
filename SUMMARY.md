@@ -134,7 +134,7 @@
 #### 安装
 ```bash
 # 下载安装脚本
-wget https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh
+wget -O install.sh https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh
 chmod +x install.sh
 
 # 交互式安装（会询问语言选择）
