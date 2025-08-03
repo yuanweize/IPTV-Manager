@@ -445,7 +445,7 @@ with open('config.json', 'w') as f:
     # 复制文件到目标目录
     echo "     复制文件到安装目录..."
     local files_copied=0
-    for file in iptv_manager.py config.json requirements.txt; do
+    for file in iptv_manager.py languages.py config.json requirements.txt; do
         if [[ -f "$file" ]]; then
             if cp "$file" "$INSTALL_DIR/" 2>/dev/null; then
                 echo "       [OK] $file"

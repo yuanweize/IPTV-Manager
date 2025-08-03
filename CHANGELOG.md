@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2025-08-03
+
+### Fixed
+- 🐛 **CRITICAL**: Fixed languages.py file not being copied during installation
+- 📦 Fixed file copying loop in install.sh missing languages.py
+- 🌐 Resolved issue where interface shows text keys instead of translations
+
+### Added
+- 🔧 Emergency fix scripts (fix_languages_file.sh and fix_languages_file.py)
+- 📋 Comprehensive diagnosis script for language issues
+
+### Changed
+- 📦 Updated installation script to properly copy all downloaded files
+- 🔢 Incremented version number to 1.0.8
+
 ## [1.0.7] - 2025-08-03
 
 ### Added
