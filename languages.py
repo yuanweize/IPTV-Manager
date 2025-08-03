@@ -9,6 +9,9 @@ Language Support Module
 LANG_ZH = {
     # 菜单相关
     "menu_title": "IPTV直播源管理系统",
+    "project_description": "高性能IPTV直播源自动下载和管理工具",
+    "project_url": "项目地址",
+    "project_author": "开发团队",
     "menu_download": "[下载] 下载/更新直播源",
     "menu_status": "[状态] 查看系统状态",
     "menu_list": "[列表] 查看直播源列表",
@@ -199,6 +202,9 @@ LANG_ZH = {
 LANG_EN = {
     # 菜单相关
     "menu_title": "IPTV Live Source Management System",
+    "project_description": "High-Performance IPTV Live Source Management Tool",
+    "project_url": "Project URL",
+    "project_author": "Development Team",
     "menu_download": "[Download] Download/update live sources",
     "menu_status": "[Status] View system status",
     "menu_list": "[List] View live source list",
