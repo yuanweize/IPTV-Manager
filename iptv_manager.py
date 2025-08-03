@@ -14,7 +14,7 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 多语言支持 / Multi-language support
 
 作者 / Author: IPTV管理脚本开发专家 / IPTV Management Script Expert
-版本 / Version: 1.0.7
+版本 / Version: 1.0.9
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
@@ -790,8 +790,8 @@ def show_source_files(manager):
             print("       未找到直播源文件，请先下载直播源")
             return
             
-        print(f"[目录] {data_dir}")
-        print(f"[统计] 共找到 {len(m3u_files)} 个直播源文件:")
+        print(f"[{get_text('label_directory')}] {data_dir}")
+        print(f"[{get_text('label_statistics')}] {get_text('file_count')} {len(m3u_files)} {get_text('files')}")
         print()
         
         for i, file_path in enumerate(m3u_files, 1):
@@ -807,9 +807,9 @@ def show_source_files(manager):
             else:
                 size_str = f"{size / (1024 * 1024):.1f} MB"
                 
-            print(f"{i:2d}. [文件] {file_path.name}")
-            print(f"    [大小] {size_str}")
-            print(f"    [时间] {mtime.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"{i:2d}. [{get_text('label_file')}] {file_path.name}")
+            print(f"    [{get_text('label_size')}] {size_str}")
+            print(f"    [{get_text('label_time')}] {mtime.strftime('%Y-%m-%d %H:%M:%S')}")
             print()
             
     except Exception as e:
@@ -830,12 +830,12 @@ def show_config_info(manager):
         # 语言设置
         current_language = config.config.get('language', 'zh')
         language_name = "中文" if current_language == 'zh' else "English"
-        print(f"[{get_text('language') if get_text('language') != 'language' else '语言'}] {get_text('language') if get_text('language') != 'language' else '界面语言'}:")
-        print(f"   {get_text('current') if get_text('current') != 'current' else '当前'}: {language_name} ({current_language})")
+        print(f"[{get_text('label_language')}] {get_text('language')}:")
+        print(f"   {get_text('current')}: {language_name} ({current_language})")
         print()
         
         # 目录配置
-        print("[目录] 目录配置:")
+        print(f"[{get_text('label_directories')}] {get_text('config_directories')}:")
         if hasattr(config, 'get'):
             dirs = config.get('directories', {})
         else:
@@ -850,7 +850,7 @@ def show_config_info(manager):
         print()
         
         # 直播源配置
-        print("[源站] 直播源配置:")
+        print(f"[{get_text('label_sources')}] {get_text('config_sources')}:")
         if hasattr(config, 'get'):
             sources = config.get('sources', {})
         else:
@@ -882,7 +882,7 @@ def show_config_info(manager):
         print()
         
         # 下载配置
-        print("[下载] 下载配置:")
+        print(f"[{get_text('label_download')}] {get_text('config_download')}:")
         if hasattr(config, 'get'):
             download = config.get('download', {})
         else:
@@ -937,8 +937,8 @@ def show_recent_logs(manager):
             return
             
         latest_log = max(log_files, key=lambda x: x.stat().st_mtime)
-        print(f"[文件] 最新日志文件: {latest_log.name}")
-        print("[内容] 最近 20 行日志:")
+        print(f"[{get_text('label_file')}] {get_text('log_latest_file')}: {latest_log.name}")
+        print(f"[{get_text('label_content')}] {get_text('log_recent')} 20 {get_text('log_recent_lines')}:")
         print("-" * 50)
         
         with open(latest_log, 'r', encoding='utf-8') as f:
@@ -953,7 +953,7 @@ def show_recent_logs(manager):
 def cleanup_files(manager):
     """清理文件"""
     try:
-        print("[清理] 开始清理过期文件...")
+        print(f"[{get_text('label_cleanup')}] {get_text('cleanup_start')}")
         
         # 获取配置
         if hasattr(manager.config, 'get'):
@@ -989,7 +989,7 @@ def cleanup_files(manager):
                         file_path.unlink()
                         cleaned_count += 1
                         
-                print(f"[清理] 清理了 {cleaned_count} 个过期备份文件")
+                print(f"[{get_text('label_cleanup')}] {get_text('cleanup_backups')}: {cleaned_count} {get_text('cleanup_files')}")
         
         # 清理日志文件
         if log_dir_path:
@@ -1010,9 +1010,9 @@ def cleanup_files(manager):
                         file_path.unlink()
                         cleaned_count += 1
                         
-                print(f"[清理] 清理了 {cleaned_count} 个过期日志文件")
+                print(f"[{get_text('label_cleanup')}] {get_text('cleanup_logs')}: {cleaned_count} {get_text('cleanup_files')}")
                 
-        print("[完成] 清理完成！")
+        print(f"[{get_text('label_complete')}] {get_text('cleanup_complete')}")
         
     except Exception as e:
         print(f"[错误] 清理失败: {e}")
@@ -1020,7 +1020,7 @@ def cleanup_files(manager):
 
 def get_current_version():
     """获取当前版本号 / Get current version"""
-    return "1.0.7"
+    return "1.0.9"
 
 def get_remote_version():
     """获取远程版本号 / Get remote version"""
@@ -1359,7 +1359,7 @@ def main():
     parser.add_argument(
         '--version', 
         action='version', 
-        version='IPTV Manager 1.0.7'
+        version='IPTV Manager 1.0.9'
     )
     
     args = parser.parse_args()

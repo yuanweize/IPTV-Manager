@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.8] - 2025-08-03
+## [1.0.9] - 2025-08-03
 
 ### Fixed
 - 🐛 **CRITICAL**: Fixed languages.py file not being copied during installation
@@ -19,6 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - 📦 Updated installation script to properly copy all downloaded files
 - 🔢 Incremented version number to 1.0.8
+
+## [1.0.8] - 2025-08-03
+
+### Fixed
+- 🌐 **CRITICAL**: Fixed incomplete English translations in user interface
+- 📋 Replaced hardcoded Chinese text with proper get_text() calls
+- 🔧 Fixed file listing, configuration display, log viewing, and cleanup functions
+- 📝 Added missing English translations for labels and status messages
+
+### Added
+- 🌐 Complete English translations for all user interface elements
+- 📋 New text keys for labels, cleanup messages, and log display
+- 🔧 Proper localization for file operations and system status
+
+### Changed
+- 🔢 Incremented version number to 1.0.8
+- 🌐 Improved translation coverage to 100% for both languages
 
 ## [1.0.7] - 2025-08-03
 
