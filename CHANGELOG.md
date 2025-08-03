@@ -24,18 +24,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - 🎨 Enhanced menu display with project information
-- 📋 Project description, URL, and development team info in menu header
+- 📋 Project description and URL in menu header
 - 🔢 Version number display in menu title
 - 📊 Improved menu layout with better visual separation
 
 ### Changed
 - 🔢 **MAJOR VERSION BUMP**: Upgraded from 1.0.9 to 2.0.4
 - 🎨 Expanded menu width from 60 to 70 characters for better information display
-- 📋 Enhanced user experience with comprehensive project information
+- 📋 Enhanced user experience with essential project information
+- 🔧 Removed development team information for cleaner display
 
 ### Technical
-- 🌐 Added new text keys for project information (project_description, project_url, project_author)
-- 🔧 Updated menu display function with project details section
+- 🌐 Added new text keys for project information (project_description, project_url)
+- 🔧 Updated menu display function with streamlined project details section
 - 📝 Maintained full bilingual support for new information elements
 
 ## [1.0.8] - 2025-08-03
