@@ -201,7 +201,7 @@ chmod +x install.sh
 
 ```bash
 # 1. 下载安装脚本
-wget https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh
+wget -O install.sh https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh
 chmod +x install.sh
 
 # 2. 运行安装脚本（支持交互式配置）
