@@ -258,9 +258,9 @@ class IPTVLogger:
             for log_file in log_dir.glob("iptv_manager_*.log"):
                 if log_file.stat().st_mtime < cutoff_date.timestamp():
                     log_file.unlink()
-                    logging.info(f"删除过期日志文件: {log_file}")
+                    logging.info(f"{get_text('deleted_log')}: {log_file}")
         except Exception as e:
-            logging.error(f"清理日志文件失败: {e}")
+            logging.error(f"{get_text('cleanup_failed')}: {e}")
 
 
 class IPTVDownloader:
@@ -441,10 +441,10 @@ class IPTVDownloader:
         """
         sources = self.config.get_sources()
         if not sources:
-            logging.warning("没有启用的直播源")
+            logging.warning("No enabled live sources" if get_text('language') == 'en' else "没有启用的直播源")
             return {}
         
-        logging.info(f"开始下载 {len(sources)} 个直播源")
+        logging.info(f"Starting download of {len(sources)} live sources" if get_text('language') == 'en' else f"开始下载 {len(sources)} 个直播源")
         
         results = {}
         max_workers = min(len(sources), self.config.get('download.max_workers', 4))
@@ -471,7 +471,7 @@ class IPTVDownloader:
         success_count = sum(1 for success, _ in results.values() if success)
         total_count = len(results)
         
-        logging.info(f"下载完成: {success_count}/{total_count} 成功")
+        logging.info(f"{get_text('download_complete_stats')}: {success_count}/{total_count} {get_text('success_sources')}")
         
         return results
 
@@ -503,13 +503,13 @@ class IPTVMaintenance:
                 if backup_file.is_file() and backup_file.stat().st_mtime < cutoff_date.timestamp():
                     backup_file.unlink()
                     deleted_count += 1
-                    logging.debug(f"删除过期备份: {backup_file}")
+                    logging.debug(f"{get_text('deleted_backup')}: {backup_file}")
             
             if deleted_count > 0:
-                logging.info(f"清理过期备份文件: {deleted_count} 个")
+                logging.info(f"{get_text('cleanup_old_backups')}: {deleted_count} 个")
                 
         except Exception as e:
-            logging.error(f"清理备份文件失败: {e}")
+            logging.error(f"{get_text('cleanup_failed')}: {e}")
     
     def generate_status_report(self, download_results: Dict[str, Tuple[bool, str]]) -> str:
         """
@@ -522,9 +522,9 @@ class IPTVMaintenance:
             状态报告内容
         """
         report_lines = [
-            "IPTV直播源管理状态报告",
+            get_text('status_report_title'),
             "=" * 50,
-            f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"{get_text('generate_time')}: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             ""
         ]
         
@@ -582,10 +582,10 @@ class IPTVMaintenance:
             with open(report_file, 'w', encoding='utf-8') as f:
                 f.write(report_content)
             
-            logging.info(f"状态报告已保存: {report_file}")
+            logging.info(f"{get_text('status_report_saved')}: {report_file}")
             
         except Exception as e:
-            logging.error(f"保存状态报告失败: {e}")
+            logging.error(f"{get_text('save_report_failed')}: {e}")
 
 
 class IPTVManager:
@@ -604,10 +604,10 @@ class IPTVManager:
             self.downloader = IPTVDownloader(self.config)
             self.maintenance = IPTVMaintenance(self.config)
             
-            logging.info("IPTV管理器初始化完成")
+            logging.info(get_text('init_complete'))
             
         except Exception as e:
-            print(f"初始化失败: {e}")
+            print(f"{get_text('init_failed')}: {e}")
             sys.exit(1)
     
     def run(self):
@@ -1170,6 +1170,68 @@ def main():
         return 130
     except Exception as e:
         print(f"程序执行失败: {e}")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+def ma
+in():
+    """主函数 / Main function"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description='IPTV Live Source Management System / IPTV直播源管理系统',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    parser.add_argument(
+        '--download', 
+        action='store_true',
+        help='Download/update live sources directly / 直接下载/更新直播源'
+    )
+    
+    parser.add_argument(
+        '--status', 
+        action='store_true',
+        help='Show system status / 显示系统状态'
+    )
+    
+    parser.add_argument(
+        '--config', 
+        type=str, 
+        default='config.json',
+        help='Configuration file path / 配置文件路径'
+    )
+    
+    parser.add_argument(
+        '--version', 
+        action='version', 
+        version='IPTV Manager 1.0.4'
+    )
+    
+    args = parser.parse_args()
+    
+    try:
+        manager = IPTVManager(args.config)
+        
+        if args.download:
+            # 直接下载模式
+            return manager.run()
+        elif args.status:
+            # 显示状态
+            manager.show_status()
+            return 0
+        else:
+            # 交互式模式
+            return interactive_mode(manager)
+            
+    except KeyboardInterrupt:
+        print(f"\n{get_text('user_interrupt')}")
+        return 130
+    except Exception as e:
+        print(f"{get_text('error')}: {e}")
         return 1
 
 
