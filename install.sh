@@ -2,12 +2,12 @@
 # IPTV直播源管理脚本一键安装脚本 - 开发日期: 2025-08-03
 # IPTV Live Source Management Script One-Click Installer - Development Date: 2025-08-03
 # 适用于Debian/Ubuntu系统 / For Debian/Ubuntu Systems
-# 脚本版本 / Script Version: 2.0.7
+# 脚本版本 / Script Version: 2.0.8
 
 set -e
 
 # 脚本信息
-SCRIPT_VERSION="2.0.7"
+SCRIPT_VERSION="2.0.8"
 SCRIPT_DATE="2025-08-03"
 
 # 项目信息
@@ -200,6 +200,15 @@ get_text() {
             "task_content") echo "Task content" ;;
             "cron_setup_failed") echo "Scheduled task setup failed, please add manually:" ;;
             "add_line") echo "Add line" ;;
+            "install_complete_message") echo "IPTV Manager installation completed!" ;;
+            "update_available_message") echo "A new version of the installation script is available!" ;;
+            "download_progress_label") echo "Download progress" ;;
+            "checking_updates") echo "Checking for updates..." ;;
+            "script_up_to_date") echo "The script is already up to date" ;;
+            "update_success_message") echo "Script updated! Restarting with the new version..." ;;
+            "network_issue_warning") echo "Unable to check for updates (network issue)" ;;
+            "starting_installation") echo "Starting installation process" ;;
+            "all_steps_complete") echo "All installation steps completed!" ;;
             *) echo "$key" ;;
         esac
     else
@@ -339,6 +348,15 @@ get_text() {
             "task_content") echo "任务内容" ;;
             "cron_setup_failed") echo "[警告] 定时任务设置失败，请手动添加：" ;;
             "add_line") echo "添加行" ;;
+            "install_complete_message") echo "IPTV直播源管理脚本安装完成!" ;;
+            "update_available_message") echo "发现新版本的安装脚本！" ;;
+            "download_progress_label") echo "下载进度" ;;
+            "checking_updates") echo "检查脚本更新..." ;;
+            "script_up_to_date") echo "脚本已是最新版本" ;;
+            "update_success_message") echo "脚本已更新！使用新版本重新启动..." ;;
+            "network_issue_warning") echo "无法检查更新（网络问题）" ;;
+            "starting_installation") echo "开始安装过程" ;;
+            "all_steps_complete") echo "所有安装步骤完成！" ;;
             *) echo "$key" ;;
         esac
     fi
@@ -1004,7 +1022,7 @@ run_script() {
                 local filled=$((step * 40 / total))
                 local empty=$((40 - filled))
                 
-                printf "\r下载进度: ["
+                printf "\r$(get_text 'download_progress_label'): ["
                 printf "%*s" $filled | tr ' ' '█'
                 printf "%*s" $empty | tr ' ' '░'
                 printf "] %d%%" $progress
@@ -1154,7 +1172,7 @@ check_script_update() {
     if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
         echo -e "${BLUE}Checking for script updates...${NC}"
     else
-        echo -e "${BLUE}检查脚本更新...${NC}"
+        echo -e "${BLUE}$(get_text 'checking_updates')${NC}"
     fi
     
     local remote_script_url="https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh"
@@ -1178,7 +1196,7 @@ check_script_update() {
                 echo -e "${YELLOW}[UPDATE AVAILABLE]${NC} A newer script version is available!"
                 echo -n "Update to the latest version? (Y/n): "
             else
-                echo -e "${YELLOW}[发现更新]${NC} 发现新版本的安装脚本！"
+                echo -e "${YELLOW}[发现更新]${NC} $(get_text 'update_available_message')"
                 echo -n "是否更新到最新版本? (Y/n): "
             fi
             
@@ -1197,7 +1215,7 @@ check_script_update() {
                 if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
                     echo -e "${GREEN}[SUCCESS]${NC} Script updated! Restarting with new version..."
                 else
-                    echo -e "${GREEN}[成功]${NC} 脚本已更新！使用新版本重新启动..."
+                    echo -e "${GREEN}[成功]${NC} $(get_text 'update_success_message')"
                 fi
                 
                 # 重新执行新脚本
@@ -1213,7 +1231,7 @@ check_script_update() {
             if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
                 echo -e "${GREEN}[UP TO DATE]${NC} Script is already the latest version"
             else
-                echo -e "${GREEN}[已是最新]${NC} 脚本已是最新版本"
+                echo -e "${GREEN}[已是最新]${NC} $(get_text 'script_up_to_date')"
             fi
         fi
         
@@ -1222,7 +1240,7 @@ check_script_update() {
         if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
             echo -e "${YELLOW}[WARNING]${NC} Unable to check for updates (network issue)"
         else
-            echo -e "${YELLOW}[警告]${NC} 无法检查更新（网络问题）"
+            echo -e "${YELLOW}[警告]${NC} $(get_text 'network_issue_warning')"
         fi
     fi
     
@@ -1310,7 +1328,7 @@ main() {
     local current_step=0
     
     echo
-    echo -e "${BLUE}开始安装过程${NC}"
+    echo -e "${BLUE}$(get_text 'starting_installation')${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     for step_info in "${steps[@]}"; do
@@ -1328,7 +1346,7 @@ main() {
         echo
     done
     
-    echo -e "${GREEN}所有安装步骤完成！${NC}"
+    echo -e "${GREEN}$(get_text 'all_steps_complete')${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 
