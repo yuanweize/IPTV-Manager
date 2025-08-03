@@ -13,7 +13,7 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 兼容crontab定时执行 / Compatible with crontab scheduled execution
 - 多语言支持 / Multi-language support
 
-版本 / Version: 2.0.4
+版本 / Version: 2.0.5
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
@@ -1025,7 +1025,7 @@ def cleanup_files(manager):
 
 def get_current_version():
     """获取当前版本号 / Get current version"""
-    return "2.0.4"
+    return "2.0.5"
 
 def get_remote_version():
     """获取远程版本号 / Get remote version"""
@@ -1364,7 +1364,7 @@ def main():
     parser.add_argument(
         '--version', 
         action='version', 
-        version='IPTV Manager 2.0.4'
+        version='IPTV Manager 2.0.5'
     )
     
     args = parser.parse_args()

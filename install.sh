@@ -1,8 +1,14 @@
 #!/bin/bash
-# IPTV直播源管理脚本一键安装脚本
-# 适用于Debian/Ubuntu系统
+# IPTV直播源管理脚本一键安装脚本 - 开发日期: 2025-08-03
+# IPTV Live Source Management Script One-Click Installer - Development Date: 2025-08-03
+# 适用于Debian/Ubuntu系统 / For Debian/Ubuntu Systems
+# 脚本版本 / Script Version: 2.0.5
 
 set -e
+
+# 脚本信息
+SCRIPT_VERSION="2.0.5"
+SCRIPT_DATE="2025-08-03"
 
 # 项目信息
 GITHUB_REPO="yuanweize/IPTV-Manager"
@@ -50,6 +56,65 @@ show_progress_bar() {
     
     if [ $current -eq $total ]; then
         echo
+    fi
+}
+
+# 多语言文本函数
+get_text() {
+    local key="$1"
+    
+    if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+        case "$key" in
+            "install_path_selection") echo "Installation Path Selection" ;;
+            "select_install_path") echo "Please select installation path:" ;;
+            "use_default_path") echo "Use default path" ;;
+            "custom_path") echo "Custom path" ;;
+            "default_recommended") echo "Tip: Default path follows Linux standards, recommended" ;;
+            "enter_option_default") echo "Enter option (default: 1) >" ;;
+            "data_dir_selection") echo "Data Directory Selection" ;;
+            "select_data_dir") echo "Please select live source file storage directory:" ;;
+            "use_default_dir") echo "Use default directory" ;;
+            "custom_dir_recommended") echo "Custom directory (recommended for large storage)" ;;
+            "large_storage_tip") echo "Tip: If you have large capacity disk, recommend custom directory" ;;
+            "post_install_actions") echo "Post-Installation Actions" ;;
+            "run_after_install") echo "Run immediately after installation(Y/n):" ;;
+            "download_immediately") echo "Download live sources immediately (recommended)" ;;
+            "install_only") echo "Complete installation only, run manually later" ;;
+            "test_install_tip") echo "Tip: Choose Y to immediately test if the program works" ;;
+            "config_confirmation") echo "Installation Configuration Confirmation" ;;
+            "install_path") echo "Installation Path" ;;
+            "data_directory") echo "Data Directory" ;;
+            "run_after_install_short") echo "Run After Installation" ;;
+            "confirm_install") echo "Confirm the above configuration and start installation? (Y/n):" ;;
+            "config_confirmed") echo "[OK] Configuration confirmed, starting installation" ;;
+            *) echo "$key" ;;
+        esac
+    else
+        case "$key" in
+            "install_path_selection") echo "安装路径选择" ;;
+            "select_install_path") echo "请选择安装路径:" ;;
+            "use_default_path") echo "使用默认路径" ;;
+            "custom_path") echo "自定义路径" ;;
+            "default_recommended") echo "提示: 默认路径符合Linux标准，推荐使用" ;;
+            "enter_option_default") echo "输入选项回车默认: 1 >" ;;
+            "data_dir_selection") echo "数据目录选择" ;;
+            "select_data_dir") echo "请选择直播源文件保存目录:" ;;
+            "use_default_dir") echo "使用默认目录" ;;
+            "custom_dir_recommended") echo "自定义目录 (推荐用于大容量存储)" ;;
+            "large_storage_tip") echo "提示: 如果有大容量磁盘，建议选择自定义目录" ;;
+            "post_install_actions") echo "安装后操作" ;;
+            "run_after_install") echo "安装完成后立即运行(Y/n):" ;;
+            "download_immediately") echo "立即下载直播源 (推荐，验证安装是否成功)" ;;
+            "install_only") echo "仅完成安装，稍后手动运行" ;;
+            "test_install_tip") echo "提示: 选择Y可以立即测试程序是否正常工作" ;;
+            "config_confirmation") echo "安装配置确认" ;;
+            "install_path") echo "安装路径" ;;
+            "data_directory") echo "数据目录" ;;
+            "run_after_install_short") echo "安装后立即运行" ;;
+            "confirm_install") echo "确认以上配置并开始安装? (Y/n):" ;;
+            "config_confirmed") echo "[OK] 配置确认，开始安装" ;;
+            *) echo "$key" ;;
+        esac
     fi
 }
 
@@ -104,15 +169,15 @@ get_user_preferences() {
         
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "安装路径选择"
+        echo "$(get_text 'install_path_selection')"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "请选择安装路径:"
-        echo "1) 使用默认路径: $DEFAULT_INSTALL_DIR"
-        echo "2) 自定义路径"
+        echo "$(get_text 'select_install_path')"
+        echo "1) $(get_text 'use_default_path'): $DEFAULT_INSTALL_DIR"
+        echo "2) $(get_text 'custom_path')"
         echo
-        echo "提示: 默认路径符合Linux标准，推荐使用"
+        echo "$(get_text 'default_recommended')"
         echo
-        echo -n "输入选项回车默认: 1 > "
+        echo -n "$(get_text 'enter_option_default') "
         read path_choice
         
         case ${path_choice:-1} in
@@ -142,16 +207,20 @@ get_user_preferences() {
         # 询问直播源文件保存目录
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "数据目录选择"
+        echo "$(get_text 'data_dir_selection')"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "请选择直播源文件保存目录:"
-        echo "1) 使用默认目录: $INSTALL_DIR/data"
-        echo "2) 自定义目录 (推荐用于大容量存储)"
+        echo "$(get_text 'select_data_dir')"
+        echo "1) $(get_text 'use_default_dir'): $INSTALL_DIR/data"
+        echo "2) $(get_text 'custom_dir_recommended')"
         echo
-        echo "提示: 如果有大容量磁盘，建议选择自定义目录"
-        echo "      例如: /media/storage/iptv 或 /data/iptv"
+        echo "$(get_text 'large_storage_tip')"
+        if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+            echo "      Example: /media/storage/iptv or /data/iptv"
+        else
+            echo "      例如: /media/storage/iptv 或 /data/iptv"
+        fi
         echo
-        echo -n "输入选项回车默认: 1 > "
+        echo -n "$(get_text 'enter_option_default') "
         read data_choice
         
         case ${data_choice:-1} in
@@ -186,15 +255,19 @@ get_user_preferences() {
         # 询问是否立即运行
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "安装后操作"
+        echo "$(get_text 'post_install_actions')"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "安装完成后立即运行(Y/n):"
-        echo "Y) 立即下载直播源 (推荐，验证安装是否成功)"
-        echo "n) 仅完成安装，稍后手动运行"
+        echo "$(get_text 'run_after_install')"
+        echo "Y) $(get_text 'download_immediately')"
+        echo "n) $(get_text 'install_only')"
         echo
-        echo "提示: 选择Y可以立即测试程序是否正常工作"
+        echo "$(get_text 'test_install_tip')"
         echo
-        echo -n "输入选项回车默认: Y > "
+        if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+            echo -n "Enter option (default: Y) > "
+        else
+            echo -n "输入选项回车默认: Y > "
+        fi
         read run_immediately
         RUN_IMMEDIATELY=${run_immediately:-Y}
         
@@ -213,26 +286,30 @@ get_user_preferences() {
     
     # 显示配置确认
     echo
-    echo -e "${BLUE} 安装配置确认${NC}"
+    echo -e "${BLUE} $(get_text 'config_confirmation')${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo -e "${GREEN}[OK]${NC} 安装路径: $INSTALL_DIR"
-    echo -e "${GREEN}[OK]${NC} 数据目录: $DATA_DIR"
-    echo -e "${GREEN}[OK]${NC} 安装后立即运行: $RUN_IMMEDIATELY"
+    echo -e "${GREEN}[OK]${NC} $(get_text 'install_path'): $INSTALL_DIR"
+    echo -e "${GREEN}[OK]${NC} $(get_text 'data_directory'): $DATA_DIR"
+    echo -e "${GREEN}[OK]${NC} $(get_text 'run_after_install_short'): $RUN_IMMEDIATELY"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     # 检查是否可以交互
     if [[ "${SKIP_INTERACTIVE:-}" != "true" ]]; then
         echo
-        echo -n "确认以上配置并开始安装? (Y/n): "
+        echo -n "$(get_text 'confirm_install') "
         read confirm_install
         confirm_install=${confirm_install:-Y}
         
         if [[ ! "$confirm_install" =~ ^[Yy]$ ]]; then
             echo
-            echo "安装已取消。如需重新配置，请重新运行安装脚本。"
+            if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+                echo "Installation cancelled. Please re-run the script to reconfigure."
+            else
+                echo "安装已取消。如需重新配置，请重新运行安装脚本。"
+            fi
             exit 0
         fi
-        echo "[OK] 配置确认，开始安装"
+        echo "$(get_text 'config_confirmed')"
     fi
     
     echo
@@ -846,9 +923,90 @@ show_completion() {
     echo -e "${GREEN}安装完成! 享受使用吧!${NC}"
 }
 
+# 检查脚本更新
+check_script_update() {
+    if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+        echo -e "${BLUE}Checking for script updates...${NC}"
+    else
+        echo -e "${BLUE}检查脚本更新...${NC}"
+    fi
+    
+    local remote_script_url="https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh"
+    local temp_script="/tmp/install_remote.sh"
+    
+    # 下载远程脚本检查版本
+    if curl -fsSL "$remote_script_url" -o "$temp_script" 2>/dev/null; then
+        local remote_version=$(grep "SCRIPT_VERSION=" "$temp_script" | head -1 | cut -d'"' -f2)
+        local remote_date=$(grep "SCRIPT_DATE=" "$temp_script" | head -1 | cut -d'"' -f2)
+        
+        if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+            echo "Local script version: $SCRIPT_VERSION (Date: $SCRIPT_DATE)"
+            echo "Remote script version: $remote_version (Date: $remote_date)"
+        else
+            echo "本地脚本版本: $SCRIPT_VERSION (日期: $SCRIPT_DATE)"
+            echo "远程脚本版本: $remote_version (日期: $remote_date)"
+        fi
+        
+        if [[ "$remote_version" > "$SCRIPT_VERSION" ]] || [[ "$remote_date" > "$SCRIPT_DATE" ]]; then
+            if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+                echo -e "${YELLOW}[UPDATE AVAILABLE]${NC} A newer script version is available!"
+                echo -n "Update to the latest version? (Y/n): "
+            else
+                echo -e "${YELLOW}[发现更新]${NC} 发现新版本的安装脚本！"
+                echo -n "是否更新到最新版本? (Y/n): "
+            fi
+            
+            read update_choice
+            if [[ "${update_choice:-Y}" =~ ^[Yy]$ ]]; then
+                if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+                    echo "Updating script..."
+                else
+                    echo "正在更新脚本..."
+                fi
+                
+                cp "$temp_script" "$0"
+                chmod +x "$0"
+                rm -f "$temp_script"
+                
+                if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+                    echo -e "${GREEN}[SUCCESS]${NC} Script updated! Restarting with new version..."
+                else
+                    echo -e "${GREEN}[成功]${NC} 脚本已更新！使用新版本重新启动..."
+                fi
+                
+                # 重新执行新脚本
+                exec "$0" "$@"
+            else
+                if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+                    echo "Continuing with current version..."
+                else
+                    echo "继续使用当前版本..."
+                fi
+            fi
+        else
+            if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+                echo -e "${GREEN}[UP TO DATE]${NC} Script is already the latest version"
+            else
+                echo -e "${GREEN}[已是最新]${NC} 脚本已是最新版本"
+            fi
+        fi
+        
+        rm -f "$temp_script"
+    else
+        if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+            echo -e "${YELLOW}[WARNING]${NC} Unable to check for updates (network issue)"
+        else
+            echo -e "${YELLOW}[警告]${NC} 无法检查更新（网络问题）"
+        fi
+    fi
+    
+    echo
+}
+
 # 显示帮助信息
 show_help() {
-    echo "IPTV直播源管理脚本一键安装程序 / IPTV Manager One-Click Installer"
+    echo "IPTV直播源管理脚本一键安装程序 - 开发日期: $SCRIPT_DATE"
+    echo "IPTV Manager One-Click Installer - Development Date: $SCRIPT_DATE"
     echo "=================================================================="
     echo
     echo "使用方法 / Usage:"
@@ -881,8 +1039,13 @@ main() {
         exit 0
     fi
     
-    echo -e "${BLUE}IPTV直播源管理脚本一键安装程序${NC}"
-    echo "========================================"
+    if [[ "${SELECTED_LANGUAGE:-zh}" == "en" ]]; then
+        echo -e "${BLUE}IPTV Manager One-Click Installer - Development Date: $SCRIPT_DATE${NC}"
+        echo "=================================================================="
+    else
+        echo -e "${BLUE}IPTV直播源管理脚本一键安装程序 - 开发日期: $SCRIPT_DATE${NC}"
+        echo "========================================"
+    fi
     echo
     
     # 显示执行模式
@@ -902,6 +1065,7 @@ main() {
     local steps=(
         "check_root:检查用户权限"
         "select_language:选择语言"
+        "check_script_update:检查脚本更新"
         "get_user_preferences:获取用户配置"
         "check_system:检查系统环境"
         "install_system_deps:安装系统依赖"
