@@ -205,6 +205,10 @@ LANG_ZH = {
 
 # 英文语言包
 LANG_EN = {
+    "uninstall_warning": "This will completely remove the IPTV Manager and all its data!",
+    "uninstall_warning_details": "Including: program files, config files, channel lists, backups and logs",
+    "uninstall_confirm1": "Confirm uninstall? Enter 'yes' to continue, any other key to cancel",
+    "uninstall_confirm2": "Final confirmation: Enter 'DELETE' to start uninstall",
     # 菜单相关
     "menu_title": "IPTV Live Source Management System",
     "project_description": "High-Performance IPTV Live Source Management Tool",
