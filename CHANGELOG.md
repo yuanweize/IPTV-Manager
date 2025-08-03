@@ -5,22 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2025-08-03
+
+### Added
+- 🔄 Program update functionality in interactive menu
+- �  Automatic version checking from GitHub releases
+- � EOne-click update feature with environment preservation
+- � LUpdate status messages in both languages
+
+### Fixed
+- � Fixed Lsyntax error in main() function definition
+- 🔧 Resolved duplicate function definition issue
+- 📝 Corrected menu option numbering (0-8)
+
 ## [1.0.4] - 2025-08-03
 
 ### Added
 - 🌐 Multi-language support (Chinese/English)
 - 🎨 GitHub-style README with badges and better formatting
-- 📝 English README (README_EN.md)
+- �  English README (README_EN.md)
 - 🔧 Language selection during installation
 - 📋 MIT License
 - 📁 .gitignore file
 - 📖 CHANGELOG.md
+- 🧪 Installation test script (test_installation.py)
+- 🛠️ Makefile for project management
+- 📚 Comprehensive project documentation
 
 ### Changed
 - 🎨 Improved project structure and documentation
 - 🌍 All user-facing text now supports localization
 - ⚙️ Enhanced configuration with language settings
 - 📚 Better code documentation with bilingual comments
+- 🔧 Enhanced installation script with language selection
 
 ### Fixed
 - 🐛 Various minor bugs in text display

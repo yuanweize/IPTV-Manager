@@ -15,9 +15,10 @@ LANG_ZH = {
     "menu_config": "[配置] 配置管理",
     "menu_logs": "[日志] 查看日志",
     "menu_cleanup": "[清理] 清理维护",
+    "menu_update": "[更新] 更新程序",
     "menu_uninstall": "[卸载] 卸载程序",
     "menu_exit": "[退出] 退出程序",
-    "menu_prompt": "请输入选项 (0-7):",
+    "menu_prompt": "请输入选项 (0-8):",
     
     # 操作消息
     "download_start": "开始下载/更新直播源...",
@@ -28,10 +29,11 @@ LANG_ZH = {
     "config_info": "配置管理",
     "logs_recent": "查看最新日志",
     "cleanup_maintenance": "清理维护",
+    "update_program": "更新程序",
     "uninstall_program": "卸载程序",
     "exit_message": "感谢使用 IPTV 管理系统，再见！",
     "continue_prompt": "按回车键继续...",
-    "invalid_option": "无效选项，请输入 0-7 之间的数字",
+    "invalid_option": "无效选项，请输入 0-8 之间的数字",
     "operation_failed": "操作失败",
     "user_interrupt": "用户中断，退出程序",
     
@@ -136,6 +138,19 @@ LANG_ZH = {
     "missing_dependencies": "缺少必要的依赖包",
     "install_dependencies": "请运行以下命令安装",
     "or": "或者",
+    
+    # 更新相关
+    "update_checking": "检查更新中...",
+    "update_available": "发现新版本",
+    "update_current": "当前版本",
+    "update_latest": "最新版本",
+    "update_confirm": "是否立即更新?",
+    "update_downloading": "下载更新中...",
+    "update_installing": "安装更新中...",
+    "update_success": "更新完成！请重新启动程序",
+    "update_failed": "更新失败",
+    "update_no_new": "已是最新版本",
+    "update_cancelled": "更新已取消",
 }
 
 # 英文语言包
@@ -148,9 +163,10 @@ LANG_EN = {
     "menu_config": "[Config] Configuration management",
     "menu_logs": "[Logs] View logs",
     "menu_cleanup": "[Cleanup] Cleanup maintenance",
+    "menu_update": "[Update] Update program",
     "menu_uninstall": "[Uninstall] Uninstall program",
     "menu_exit": "[Exit] Exit program",
-    "menu_prompt": "Enter option (0-7):",
+    "menu_prompt": "Enter option (0-8):",
     
     # 操作消息
     "download_start": "Starting download/update of live sources...",
@@ -161,10 +177,11 @@ LANG_EN = {
     "config_info": "Configuration Management",
     "logs_recent": "View Recent Logs",
     "cleanup_maintenance": "Cleanup Maintenance",
+    "update_program": "Update Program",
     "uninstall_program": "Uninstall Program",
     "exit_message": "Thank you for using IPTV Manager, goodbye!",
     "continue_prompt": "Press Enter to continue...",
-    "invalid_option": "Invalid option, please enter a number between 0-7",
+    "invalid_option": "Invalid option, please enter a number between 0-8",
     "operation_failed": "Operation failed",
     "user_interrupt": "User interrupt, exiting program",
     
@@ -269,6 +286,19 @@ LANG_EN = {
     "missing_dependencies": "Missing required dependencies",
     "install_dependencies": "Please run the following command to install",
     "or": "or",
+    
+    # 更新相关
+    "update_checking": "Checking for updates...",
+    "update_available": "New version available",
+    "update_current": "Current version",
+    "update_latest": "Latest version",
+    "update_confirm": "Update now?",
+    "update_downloading": "Downloading update...",
+    "update_installing": "Installing update...",
+    "update_success": "Update completed! Please restart the program",
+    "update_failed": "Update failed",
+    "update_no_new": "Already up to date",
+    "update_cancelled": "Update cancelled",
 }
 
 # 语言映射

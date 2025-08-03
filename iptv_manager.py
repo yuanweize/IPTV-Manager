@@ -14,7 +14,7 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 多语言支持 / Multi-language support
 
 作者 / Author: IPTV管理脚本开发专家 / IPTV Management Script Expert
-版本 / Version: 1.0.4
+版本 / Version: 1.0.5
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
@@ -663,7 +663,8 @@ def show_menu():
     print(f"4. {get_text('menu_config')}")
     print(f"5. {get_text('menu_logs')}")
     print(f"6. {get_text('menu_cleanup')}")
-    print(f"7. {get_text('menu_uninstall')}")
+    print(f"7. {get_text('menu_update')}")
+    print(f"8. {get_text('menu_uninstall')}")
     print(f"0. {get_text('menu_exit')}")
     print()
     print("="*60)
@@ -674,7 +675,7 @@ def interactive_mode(manager):
     while True:
         try:
             show_menu()
-            choice = input(f"{get_text('menu_prompt')} ").strip()
+            choice = input(f"{get_text('menu_prompt').replace('(0-7)', '(0-8)')} ").strip()
             
             if choice == '0':
                 print(f"\n{get_text('menu_exit').replace('[退出] ', '[').replace('[Exit] ', '[')} {get_text('exit_message')}")
@@ -721,6 +722,12 @@ def interactive_mode(manager):
                 input(f"\n{get_text('continue_prompt')}")
                 
             elif choice == '7':
+                print(f"\n{get_text('menu_update').replace('[更新] ', '[').replace('[Update] ', '[')} {get_text('update_program')}")
+                print("-" * 50)
+                update_program(manager)
+                input(f"\n{get_text('continue_prompt')}")
+                
+            elif choice == '8':
                 print(f"\n{get_text('menu_uninstall').replace('[卸载] ', '[').replace('[Uninstall] ', '[')} {get_text('uninstall_program')}")
                 print("-" * 50)
                 if uninstall_program(manager):
@@ -731,7 +738,7 @@ def interactive_mode(manager):
                 input(f"\n{get_text('continue_prompt')}")
                 
             else:
-                print(f"\n[{get_text('error')}] {get_text('invalid_option')}")
+                print(f"\n[{get_text('error')}] {get_text('invalid_option').replace('0-7', '0-8')}")
                 input(f"{get_text('continue_prompt')}")
                 
         except KeyboardInterrupt:
@@ -997,6 +1004,93 @@ def cleanup_files(manager):
         print(f"[错误] 清理失败: {e}")
 
 
+def update_program(manager):
+    """更新程序 / Update program"""
+    try:
+        import subprocess
+        import tempfile
+        import urllib.request
+        
+        print(f"{get_text('update_checking')}")
+        
+        # GitHub API URL for latest release
+        api_url = "https://api.github.com/repos/yuanweize/IPTV-Manager/releases/latest"
+        
+        try:
+            # 获取最新版本信息
+            with urllib.request.urlopen(api_url, timeout=10) as response:
+                import json
+                release_data = json.loads(response.read().decode())
+                latest_version = release_data['tag_name'].lstrip('v')
+                current_version = "1.0.5"
+                
+                print(f"{get_text('update_current')}: {current_version}")
+                print(f"{get_text('update_latest')}: {latest_version}")
+                
+                if latest_version <= current_version:
+                    print(f"[{get_text('info')}] {get_text('update_no_new')}")
+                    return
+                
+                print(f"\n[{get_text('info')}] {get_text('update_available')}")
+                confirm = input(f"{get_text('update_confirm')} (Y/n): ").strip().lower()
+                
+                if confirm not in ['y', 'yes', '']:
+                    print(f"[{get_text('info')}] {get_text('update_cancelled')}")
+                    return
+                
+                # 下载最新的安装脚本
+                print(f"{get_text('update_downloading')}")
+                install_script_url = "https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh"
+                
+                with tempfile.NamedTemporaryFile(mode='w+b', suffix='.sh', delete=False) as temp_file:
+                    with urllib.request.urlopen(install_script_url, timeout=30) as script_response:
+                        temp_file.write(script_response.read())
+                    temp_script_path = temp_file.name
+                
+                # 设置执行权限
+                os.chmod(temp_script_path, 0o755)
+                
+                print(f"{get_text('update_installing')}")
+                
+                # 获取当前配置
+                current_config = manager.config.config
+                install_dir = current_config['directories']['base_dir']
+                data_dir = current_config['directories']['data_dir']
+                language = current_config.get('language', 'zh')
+                
+                # 设置环境变量进行更新安装
+                env = os.environ.copy()
+                env.update({
+                    'SKIP_INTERACTIVE': 'true',
+                    'INSTALL_LANGUAGE': language,
+                    'CUSTOM_INSTALL_DIR': install_dir,
+                    'CUSTOM_DATA_DIR': data_dir,
+                    'AUTO_RUN': 'n',
+                    'CREATE_SYMLINK': 'Y'
+                })
+                
+                # 执行更新安装
+                result = subprocess.run(['bash', temp_script_path], env=env, capture_output=True, text=True)
+                
+                # 清理临时文件
+                os.unlink(temp_script_path)
+                
+                if result.returncode == 0:
+                    print(f"\n[{get_text('info')}] {get_text('update_success')}")
+                else:
+                    print(f"\n[{get_text('error')}] {get_text('update_failed')}")
+                    if result.stderr:
+                        print(f"Error details: {result.stderr}")
+                
+        except Exception as e:
+            print(f"[{get_text('error')}] {get_text('update_failed')}: {e}")
+            print(f"[{get_text('info')}] You can manually update by running:")
+            print("curl -fsSL https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/main/install.sh | bash")
+            
+    except Exception as e:
+        print(f"[{get_text('error')}] {get_text('update_failed')}: {e}")
+
+
 def uninstall_program(manager):
     """卸载程序"""
     try:
@@ -1173,11 +1267,7 @@ def main():
         return 1
 
 
-if __name__ == "__main__":
-    sys.exit(main())
-
-def ma
-in():
+def main():
     """主函数 / Main function"""
     import argparse
     
@@ -1208,7 +1298,7 @@ in():
     parser.add_argument(
         '--version', 
         action='version', 
-        version='IPTV Manager 1.0.4'
+        version='IPTV Manager 1.0.5'
     )
     
     args = parser.parse_args()
