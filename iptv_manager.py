@@ -13,7 +13,7 @@ IPTV直播源管理脚本 / IPTV Live Source Management Script
 - 兼容crontab定时执行 / Compatible with crontab scheduled execution
 - 多语言支持 / Multi-language support
 
-版本 / Version: 2.0.8
+版本 / Version: 2.0.9
 适用环境 / Environment: Debian/Ubuntu服务器 / Debian/Ubuntu servers
 """
 
