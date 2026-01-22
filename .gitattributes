@@ -1,0 +1,19 @@
+# Ensure consistent line endings across all platforms
+* text=auto eol=lf
+
+# Shell scripts must have LF
+*.sh text eol=lf
+
+# Python files must have LF  
+*.py text eol=lf
+
+# Markdown files
+*.md text eol=lf
+
+# JSON files
+*.json text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.gif binary
