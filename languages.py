@@ -18,9 +18,10 @@ LANG_ZH = {
     "menu_logs": "[日志] 查看日志",
     "menu_cleanup": "[清理] 清理维护",
     "menu_update": "[更新] 更新程序",
+    "menu_cron": "[定时] 定时任务管理",
     "menu_uninstall": "[卸载] 卸载程序",
     "menu_exit": "[退出] 退出程序",
-    "menu_prompt": "请输入选项 (0-9):",
+    "menu_prompt": "请输入选项 (0-10):",
     
     # 操作消息
     "download_start": "开始下载/更新直播源...",
@@ -201,6 +202,30 @@ LANG_ZH = {
     "language_english": "English",
     "language_switched": "语言已切换",
     "language_restart": "请重新启动程序以完全应用语言设置",
+    
+    # 定时任务管理相关
+    "cron_management": "定时任务管理",
+    "cron_current_status": "当前定时任务状态",
+    "cron_not_configured": "未配置定时任务",
+    "cron_configured": "已配置，执行频率",
+    "cron_every_6_hours": "每6小时一次",
+    "cron_daily_2am": "每天凌晨2点",
+    "cron_every_hour": "每小时一次",
+    "cron_custom": "自定义配置",
+    "cron_options_title": "定时任务选项",
+    "cron_option_view": "查看当前配置",
+    "cron_option_set": "设置/修改定时任务",
+    "cron_option_remove": "删除定时任务",
+    "cron_option_back": "返回主菜单",
+    "cron_select_frequency": "请选择执行频率",
+    "cron_set_success": "定时任务设置成功",
+    "cron_set_failed": "定时任务设置失败",
+    "cron_remove_confirm": "确认删除所有 IPTV Manager 定时任务?",
+    "cron_remove_success": "定时任务已删除",
+    "cron_remove_failed": "删除定时任务失败",
+    "cron_no_permission": "无权限操作 crontab",
+    "task_content": "任务内容",
+    "enter_choice_default_1": "输入选择 (默认: 1) >",
 }
 
 # 英文语言包
@@ -220,9 +245,10 @@ LANG_EN = {
     "menu_logs": "[Logs] View logs",
     "menu_cleanup": "[Cleanup] Cleanup maintenance",
     "menu_update": "[Update] Update program",
+    "menu_cron": "[Cron] Scheduled Task Management",
     "menu_uninstall": "[Uninstall] Uninstall program",
     "menu_exit": "[Exit] Exit program",
-    "menu_prompt": "Enter option (0-9):",
+    "menu_prompt": "Enter option (0-10):",
     
     # 操作消息
     "download_start": "Starting download/update of live sources...",
@@ -397,6 +423,30 @@ LANG_EN = {
     "language_english": "English",
     "language_switched": "Language switched",
     "language_restart": "Please restart the program to fully apply language settings",
+    
+    # Cron management related
+    "cron_management": "Scheduled Task Management",
+    "cron_current_status": "Current Status",
+    "cron_not_configured": "Not configured",
+    "cron_configured": "Configured, frequency",
+    "cron_every_6_hours": "Every 6 hours",
+    "cron_daily_2am": "Daily at 2 AM",
+    "cron_every_hour": "Every hour",
+    "cron_custom": "Custom",
+    "cron_options_title": "Scheduled Task Options",
+    "cron_option_view": "View current configuration",
+    "cron_option_set": "Set/modify scheduled task",
+    "cron_option_remove": "Remove scheduled task",
+    "cron_option_back": "Back to main menu",
+    "cron_select_frequency": "Please select frequency",
+    "cron_set_success": "Scheduled task set successfully",
+    "cron_set_failed": "Failed to set scheduled task",
+    "cron_remove_confirm": "Confirm removal of all IPTV Manager scheduled tasks?",
+    "cron_remove_success": "Scheduled task removed",
+    "cron_remove_failed": "Failed to remove scheduled task",
+    "cron_no_permission": "No permission to operate crontab",
+    "task_content": "Task content",
+    "enter_choice_default_1": "Enter choice (default: 1) >",
 }
 
 # 语言映射

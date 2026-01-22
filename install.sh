@@ -7,7 +7,7 @@
 set -e
 
 # 脚本信息
-SCRIPT_VERSION="2.0.8"
+SCRIPT_VERSION="2.0.9"
 SCRIPT_DATE="2025-08-03"
 
 # 项目信息

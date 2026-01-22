@@ -1,5 +1,26 @@
 # Changelog / 更新日志
 
+## [2.0.9] - 2026-01-22
+
+### Added
+- ✨ **Scheduled Task Management**: Added cron management functionality to main menu (option 9)
+  - 🔧 View current crontab configuration
+  - ⚙️ Set/modify scheduled tasks (every 6 hours / daily at 2 AM / hourly)
+  - 🗑️ Remove scheduled tasks
+  - 💡 Solves the issue where users couldn't configure cron after installation
+
+### Fixed
+- 🐛 **Cron Deletion Logic**: Fixed overly broad cron task removal in uninstall function
+  - Now only removes iptv_manager.py tasks pointing to the specific installation directory
+  - Prevents accidental deletion of other IPTV-related cron jobs
+  
+### Changed
+- 📋 Updated menu numbering to 0-10 (from 0-9)
+- 🌐 Added complete multilingual support for cron management
+- 📚 Updated documentation with cron management instructions
+- 🔢 Version bump to 2.0.9
+
+
 All notable changes to this project will be documented in this file.
 此文件记录了本项目的所有重要变更。
 

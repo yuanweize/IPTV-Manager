@@ -670,7 +670,8 @@ def show_menu():
     print(f"6. {get_text('menu_cleanup')}")
     print(f"7. {get_text('menu_update')}")
     print(f"8. {get_text('menu_language')}")
-    print(f"9. {get_text('menu_uninstall')}")
+    print(f"9. {get_text('menu_cron')}")
+    print(f"10. {get_text('menu_uninstall')}")
     print(f"0. {get_text('menu_exit')}")
     print()
     print("="*70)
@@ -740,6 +741,12 @@ def interactive_mode(manager):
                 input(f"\n{get_text('continue_prompt')}")
                 
             elif choice == '9':
+                print(f"\n{get_text('menu_cron').replace('[定时] ', '[').replace('[Cron] ', '[')} {get_text('cron_management')}")
+                print("-" * 50)
+                manage_cron(manager)
+                input(f"\n{get_text('continue_prompt')}")
+                
+            elif choice == '10':
                 print(f"\n{get_text('menu_uninstall').replace('[卸载] ', '[').replace('[Uninstall] ', '[')} {get_text('uninstall_program')}")
                 print("-" * 50)
                 if uninstall_program(manager):
@@ -1025,7 +1032,7 @@ def cleanup_files(manager):
 
 def get_current_version():
     """获取当前版本号 / Get current version"""
-    return "2.0.8"
+    return "2.0.9"
 
 def get_remote_version():
     """获取远程版本号 / Get remote version"""
@@ -1192,6 +1199,188 @@ def switch_language(manager):
     except Exception as e:
         print(f"[{get_text('error')}] Language switch failed / 语言切换失败: {e}")
 
+def manage_cron(manager):
+    """定时任务管理 / Scheduled task management"""
+    try:
+        # 获取当前cron状态
+        current_cron = get_current_cron(manager)
+        
+        while True:
+            print(f"\n{get_text('cron_management')}")
+            print("-" * 50)
+            
+            # 显示当前状态
+            print(f"[{get_text('cron_current_status')}]")
+            if current_cron:
+                frequency = parse_cron_frequency(current_cron)
+                print(f"  {get_text('cron_configured')}: {frequency}")
+                print(f"  {get_text('task_content')}: {current_cron}")
+            else:
+                print(f"  {get_text('cron_not_configured')}")
+            
+            print()
+            print(f"{get_text('cron_options_title')}:")
+            print(f"1. {get_text('cron_option_view')}")
+            print(f"2. {get_text('cron_option_set')}")
+            print(f"3. {get_text('cron_option_remove')}")
+            print(f"0. {get_text('cron_option_back')}")
+            
+            choice = input(f"\n{get_text('menu_prompt')} ").strip()
+            
+            if choice == '0':
+                break
+            elif choice == '1':
+                view_cron_details(manager)
+            elif choice == '2':
+                setup_cron_task(manager)
+                current_cron = get_current_cron(manager)
+            elif choice == '3':
+                remove_cron_task(manager)
+                current_cron = None
+            else:
+                print(f"[{get_text('error')}] {get_text('invalid_option')}")
+                
+    except Exception as e:
+        print(f"[{get_text('error')}] {e}")
+
+
+def get_current_cron(manager):
+    """获取当前的 IPTV Manager cron 任务 / Get current IPTV Manager cron task"""
+    import subprocess
+    try:
+        result = subprocess.run(['crontab', '-l'], capture_output=True, text=True)
+        if result.returncode == 0:
+            install_dir = manager.config.config['directories']['base_dir']
+            for line in result.stdout.strip().split('\n'):
+                if 'iptv_manager.py' in line and install_dir in line:
+                    return line
+        return None
+    except Exception as e:
+        print(f"[{get_text('error')}] {e}")
+        return None
+
+
+def parse_cron_frequency(cron_line):
+    """解析 cron 表达式，返回友好的频率描述 / Parse cron expression and return friendly description"""
+    parts = cron_line.strip().split()
+    if len(parts) < 5:
+        return get_text('cron_custom')
+    
+    minute, hour, day, month, weekday = parts[:5]
+    
+    if minute == '0' and hour == '*/6':
+        return get_text('cron_every_6_hours')
+    elif minute == '0' and hour == '2':
+        return get_text('cron_daily_2am')
+    elif minute == '0' and hour == '*':
+        return get_text('cron_every_hour')
+    else:
+        return get_text('cron_custom')
+
+
+def view_cron_details(manager):
+    """查看 cron 详细信息 / View cron details"""
+    print(f"\n[{get_text('info')}] {get_text('cron_current_status')}:")
+    print("-" * 50)
+    
+    import subprocess
+    try:
+        result = subprocess.run(['crontab', '-l'], capture_output=True, text=True)
+        if result.returncode == 0:
+            install_dir = manager.config.config['directories']['base_dir']
+            found = False
+            for line in result.stdout.strip().split('\n'):
+                if 'iptv_manager.py' in line and install_dir in line:
+                    print(line)
+                    found = True
+            if not found:
+                print(get_text('cron_not_configured'))
+        else:
+            print(get_text('cron_not_configured'))
+    except Exception as e:
+        print(f"[{get_text('error')}] {e}")
+
+
+def setup_cron_task(manager):
+    """设置定时任务 / Setup scheduled task"""
+    import subprocess
+    
+    print(f"\n{get_text('cron_select_frequency')}:")
+    print(f"1) {get_text('cron_every_6_hours')}")
+    print(f"2) {get_text('cron_daily_2am')}")
+    print(f"3) {get_text('cron_every_hour')}")
+    
+    choice = input(f"\n{get_text('enter_choice_default_1')} ").strip() or '1'
+    
+    install_dir = manager.config.config['directories']['base_dir']
+    
+    if choice == '1':
+        cron_entry = f"0 */6 * * * cd {install_dir} && python3 iptv_manager.py --download >> {install_dir}/logs/cron.log 2>&1"
+    elif choice == '2':
+        cron_entry = f"0 2 * * * cd {install_dir} && python3 iptv_manager.py --download >> {install_dir}/logs/cron.log 2>&1"
+    elif choice == '3':
+        cron_entry = f"0 * * * * cd {install_dir} && python3 iptv_manager.py --download >> {install_dir}/logs/cron.log 2>&1"
+    else:
+        print(f"[{get_text('error')}] {get_text('invalid_option')}")
+        return
+    
+    try:
+        # 先删除旧的任务
+        remove_cron_task(manager, silent=True)
+        
+        # 添加新任务
+        result = subprocess.run(['crontab', '-l'], capture_output=True, text=True)
+        if result.returncode == 0:
+            existing_crons = result.stdout.strip()
+        else:
+            existing_crons = ""
+        
+        new_crontab = existing_crons + f"\n{cron_entry}\n" if existing_crons else f"{cron_entry}\n"
+        
+        subprocess.run(['crontab', '-'], input=new_crontab, text=True, check=True)
+        print(f"\n[{get_text('info')}] {get_text('cron_set_success')}")
+        print(f"  {get_text('task_content')}: {cron_entry}")
+    except Exception as e:
+        print(f"\n[{get_text('error')}] {get_text('cron_set_failed')}: {e}")
+
+
+def remove_cron_task(manager, silent=False):
+    """删除定时任务 / Remove scheduled task"""
+    import subprocess
+    
+    if not silent:
+        confirm = input(f"\n{get_text('cron_remove_confirm')} (y/N): ").strip().lower()
+        if confirm not in ['y', 'yes']:
+            print(f"[{get_text('info')}] {get_text('update_cancelled')}")
+            return
+    
+    try:
+        result = subprocess.run(['crontab', '-l'], capture_output=True, text=True)
+        if result.returncode == 0:
+            install_dir = manager.config.config['directories']['base_dir']
+            lines = result.stdout.strip().split('\n')
+            # 只删除指向当前安装目录的 iptv_manager.py 任务
+            filtered_lines = [line for line in lines if not ('iptv_manager.py' in line and install_dir in line)]
+            
+            if len(filtered_lines) != len(lines):
+                if filtered_lines and filtered_lines != ['']:
+                    cron_content = '\n'.join(filtered_lines) + '\n'
+                    subprocess.run(['crontab', '-'], input=cron_content, text=True, check=True)
+                else:
+                    subprocess.run(['crontab', '-r'], capture_output=True, check=True)
+                
+                if not silent:
+                    print(f"\n[{get_text('info')}] {get_text('cron_remove_success')}")
+            else:
+                if not silent:
+                    print(f"\n[{get_text('info')}] {get_text('cron_not_configured')}")
+        else:
+            if not silent:
+                print(f"\n[{get_text('info')}] {get_text('cron_not_configured')}")
+    except Exception as e:
+        if not silent:
+            print(f"\n[{get_text('error')}] {get_text('cron_remove_failed')}: {e}")
+
 
 def uninstall_program(manager):
     """卸载程序"""
@@ -1266,8 +1455,10 @@ def uninstall_program(manager):
             result = subprocess.run(['crontab', '-l'], capture_output=True, text=True)
             if result.returncode == 0:
                 lines = result.stdout.strip().split('\n')
-                # 过滤掉包含iptv_manager.py的行
-                filtered_lines = [line for line in lines if 'iptv_manager.py' not in line and 'iptv' not in line]
+                # 只删除指向当前安装目录的iptv_manager.py任务
+                filtered_lines = [line for line in lines if not ('iptv_manager.py' in line and base_dir in line)]
+                # 只删除指向当前安装目录的iptv_manager.py任务
+                filtered_lines = [line for line in lines if not ('iptv_manager.py' in line and base_dir in line)]
                 
                 if len(filtered_lines) != len(lines):
                     # 有变化，更新crontab
@@ -1364,7 +1555,7 @@ def main():
     parser.add_argument(
         '--version', 
         action='version', 
-        version='IPTV Manager 2.0.8'
+        version='IPTV Manager 2.0.9'
     )
     
     args = parser.parse_args()
