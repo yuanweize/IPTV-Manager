@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎬 IPTV Manager
+# IPTV Manager
 
 *High-Performance IPTV Live Source Management Tool*
 
@@ -15,7 +15,7 @@ English | [简体中文](README.md)
 
 ---
 
-## 📖 Project Overview
+## Project Overview
 
 A high-performance IPTV live source automatic download and management script designed specifically for Debian/Ubuntu server environments. Features multi-source concurrent downloads, automatic updates, configuration management, and comprehensive maintenance functions.
 
@@ -24,7 +24,7 @@ A high-performance IPTV live source automatic download and management script des
 - [Contributing Guide](CONTRIBUTING.md) - Learn how to contribute code or report issues.
 - [Project Structure](PROJECT_STRUCTURE.md) - Understand the directory structure and design philosophy.
 
-## 🚀 Quick Installation
+## Quick Installation
 
 ### Method 1: Interactive Installation (Recommended)
 
@@ -56,30 +56,30 @@ CUSTOM_INSTALL_DIR=/home/user/iptv CUSTOM_DATA_DIR=/media/iptv bash install.sh
 SKIP_INTERACTIVE=true CUSTOM_INSTALL_DIR=/opt/iptv bash install.sh
 ```
 
-## ✨ Features
+## Features
 
 ### Core Features
-- 🚀 **Multi-source Concurrent Downloads**: Download multiple IPTV sources simultaneously for improved efficiency
-- ⚙️ **Configuration Management**: All parameters managed through JSON configuration files
-- 🔄 **Automatic Retry Mechanism**: Automatic retry on network failures to ensure download success
-- 📝 **Complete Logging**: Detailed operation logs for easy troubleshooting
-- 🗂️ **File Version Control**: Automatic backup of historical versions with rollback support
-- 🧹 **Automatic Cleanup**: Regular cleanup of expired files to keep system tidy
+- **Multi-source Concurrent Downloads**: Download multiple IPTV sources simultaneously for improved efficiency
+- **Configuration Management**: All parameters managed through JSON configuration files
+- **Automatic Retry Mechanism**: Automatic retry on network failures to ensure download success
+- **Complete Logging**: Detailed operation logs for easy troubleshooting
+- **File Version Control**: Automatic backup of historical versions with rollback support
+- **Automatic Cleanup**: Regular cleanup of expired files to keep system tidy
 
 ### Advanced Features
-- 🌐 **Automatic Encoding Detection**: Smart detection of M3U file encoding for compatibility
-- 🔒 **Permission Management**: Automatic setting of correct file and directory permissions
-- 📊 **Status Reports**: Generate detailed execution status reports
-- ⏰ **Cron Compatible**: Perfect support for crontab scheduled execution
-- 🛡️ **Exception Handling**: Comprehensive error handling for system stability
+- **Automatic Encoding Detection**: Smart detection of M3U file encoding for compatibility
+- **Permission Management**: Automatic setting of correct file and directory permissions
+- **Status Reports**: Generate detailed execution status reports
+- **Cron Compatible**: Perfect support for crontab scheduled execution
+- **Exception Handling**: Comprehensive error handling for system stability
 
-## 📋 System Requirements
+## System Requirements
 
 - **Operating System**: Debian/Ubuntu Linux
 - **Python Version**: Python 3.6+
 - **Dependencies**: requests, chardet
 
-## 🛠️ Installation Options
+## Installation Options
 
 ### Interactive Installation Options
 
@@ -127,7 +127,7 @@ Supported environment variables for non-interactive configuration:
 | `AUTO_RUN` | Auto-run after installation | `Y` |
 | `CREATE_SYMLINK` | Create global command symlink | `Y` |
 
-## 📁 Directory Structure
+## Directory Structure
 
 ### Default Directory Structure
 
@@ -147,7 +147,7 @@ Supported environment variables for non-interactive configuration:
     └── status_report_20240102_143022.txt
 ```
 
-## 🎯 Usage
+## Usage
 
 ### Basic Usage
 
@@ -221,7 +221,7 @@ crontab -e
 0 */6 * * * cd /opt/IPTV-Manager && python3 iptv_manager.py --download >> /opt/IPTV-Manager/logs/cron.log 2>&1
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### Configuration File
 
@@ -266,7 +266,7 @@ The `config.json` file contains the following main sections:
 }
 ```
 
-## 🧪 Installation Testing
+## Installation Testing
 
 After installation, you can run the test script to verify the installation:
 
@@ -306,10 +306,10 @@ curl -fsSL https://raw.githubusercontent.com/yuanweize/IPTV-Manager/refs/heads/m
 ```
 
 Update Features:
-- 🔄 Automatic version checking
-- 🔧 Preserve existing configuration and data
-- 🌐 Bilingual update prompts
-- 📦 One-click update installation
+- Automatic version checking
+- Preserve existing configuration and data
+- Bilingual update prompts
+- One-click update installation
 
 ### Using Makefile (Optional)
 
@@ -335,7 +335,7 @@ make status
 make clean
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -361,7 +361,7 @@ make clean
 4. **Encoding Issues**
    - Script automatically detects encoding; check source file format if issues persist
 
-## 📊 Performance Optimization
+## Performance Optimization
 
 ### Concurrency Settings
 Adjust concurrency based on server performance:
@@ -384,28 +384,28 @@ Adjust concurrency based on server performance:
 }
 ```
 
-## 🔒 Security Recommendations
+## Security Recommendations
 
 1. **File Permissions**: Ensure script and configuration file permissions are set correctly
 2. **Network Security**: Use HTTPS sources, avoid insecure HTTP connections
 3. **Regular Updates**: Regularly update Python dependency libraries
 4. **Log Monitoring**: Regularly check log files for anomalies
 
-## 📝 Version Information
+## Version Information
 
 - **Version**: 2.0.8
 - **Environment**: Debian/Ubuntu servers
 - **Python Requirement**: 3.6+
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Thanks to all contributors who have helped improve this project
 - Special thanks to the open-source community for their valuable feedback
